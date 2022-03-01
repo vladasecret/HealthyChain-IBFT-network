@@ -1,0 +1,18 @@
+data-path="/node/data" 
+host-allowlist=["*"]
+genesis-file="/config/genesis.json" 
+
+rpc-http-enabled=true 
+rpc-http-api=["ETH", "NET", "IBFT"]
+rpc-http-cors-origins=["*"]
+rpc-http-port=8545
+rpc-http-host="0.0.0.0"
+
+p2p-port=30303
+nat-method="DOCKER"
+
+bootnodes=["enode://93df0dab486fc77ff7285f1d3fed4992ce96631af1c66f338acab9bb57deb3cdb2a2e6228f684b3058f8b214a8682a485e45c4c7f4047bd9f4a1e39d33ff47f3@172.16.239.11:30303"]
+
+
+
+

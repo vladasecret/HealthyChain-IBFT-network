@@ -1,0 +1,73 @@
+version: '3.7'
+ 
+x-node-def:
+  &node-def
+  entrypoint:
+    - /bin/bash
+    - -c
+    - |
+      /opt/besu/bin/besu \
+      --config-file=/config/config.toml \
+      --p2p-host=$$(hostname -i)
+  image: hyperledger/besu
+  working_dir: /node
+  
+
+services:
+  node1:
+    << : *node-def
+    volumes:
+      - ./nodes/node1:/node
+      - ./config/:/config/
+    ports:
+      - 30303:30303
+      - 8545:8545
+    networks:
+      ibft-network:
+        ipv4_address: 172.16.239.11
+    
+  node2:
+    << : *node-def
+    volumes:
+      - ./nodes/node2:/node
+      - ./config/:/config/
+    ports:
+      - 30304:30303
+      - 8546:8545
+    networks:
+      ibft-network:
+        ipv4_address: 172.16.239.12
+
+  node3:
+    << : *node-def
+    volumes:
+      - ./nodes/node3:/node
+      - ./config/:/config/
+    ports:
+      - 30305:30303
+      - 8547:8545
+    networks:
+      ibft-network:
+        ipv4_address: 172.16.239.13
+  
+  node4:
+    << : *node-def
+    volumes:
+      - ./nodes/node4:/node
+      - ./config/:/config/
+    ports:
+      - 30306:30303
+      - 8548:8545
+    networks:
+      ibft-network:
+        ipv4_address: 172.16.239.14
+    
+networks:
+  ibft-network:
+    name: ibft-network
+    ipam:
+      config:
+        - subnet: 172.16.239.0/24
+
+
+    
