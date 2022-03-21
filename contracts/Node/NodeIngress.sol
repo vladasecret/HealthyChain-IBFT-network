@@ -4,9 +4,20 @@ import "./INodeProxy.sol";
 
 contract NodeIngress{
 
-    address private nodeContract;
+    address private nodesProxyAddress;
+    //address private adminsContract;
+    address creator;
 
-    address private adminContract;
+    modifier creatorOnly(){
+        if (creator != address(0)){
+            require(msg.sender == creator);
+        }
+        _;
+    }
+
+    function setNodesProxyAddress(address _nodesProxyAddress) external creatorOnly{
+        nodesProxyAddress = _nodesProxyAddress;
+    }
 
     event NodePermissionsUpdated(bool addsRestrictions);
 
@@ -19,7 +30,9 @@ contract NodeIngress{
         string calldata enodeHost,
         uint16 enodePort
     ) external view returns (bool){
-//        return nodesProxy.connectionAllowed(enodeId, enodeHost, enodePort);
+        if (nodesProxyAddress != address(0))
+            return INodeProxy(nodesProxyAddress).connectionAllowed(enodeId, enodeHost, enodePort);
+        return false;
     }
 
 
