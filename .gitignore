@@ -2,3 +2,6 @@
 **/data/database
 **/data/besu.*
 script.sh
+artifacts/*
+build/contracts/*
+contracts/Test.sol

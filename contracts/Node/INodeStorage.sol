@@ -18,4 +18,6 @@ interface INodeStorage{
     function calculateKey(Enode memory enode) external view returns(uint256);
     function setIdOnlyMode(bool value) external returns (bool);
     function IdOnlyMode() external view returns (bool);
+    function getEnodeIdNum(string calldata enodeId) external view returns(uint256);
+
 }

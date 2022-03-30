@@ -2,8 +2,9 @@ pragma solidity ^0.8.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/AccountStorage.sol";
-import "../contracts/AccountContract.sol";
+import "../contracts/Account/AccountStorage.sol";
+import "../contracts/User/UserContract.sol";
+import "../contracts/RegistryContract.sol";
 
 contract TestAccountStorage is AccountStorage{
     //NodeStorage nodeStorage = NodeStorage(DeployedAddresses.NodeStorage());
@@ -20,13 +21,17 @@ contract TestAccountStorage is AccountStorage{
                             
     }
 
+    function userContractMock() internal returns(UserContract){
+        return new UserContract(address(0), RegistryContract(address(0)));
+    }
+
     function testEmptySize() public {
         Assert.equal(size(), 0, "Storage must be empty");
     }
 
     function testAddSuccess() public {
         for (uint i = 0; i < accounts.length; i++){
-            bool res = add(accounts[i], AccountClass(i % 3), new AccountContract());
+            bool res = add(accounts[i], UserClass(i % 3), userContractMock());
             assert(res);
         }
     }
@@ -37,7 +42,7 @@ contract TestAccountStorage is AccountStorage{
     
 
     function testAddFailture() public {
-        bool res = add(accounts[0], AccountClass(1), new AccountContract());
+        bool res = add(accounts[0], UserClass(1), userContractMock());
         Assert.equal(res, false, "Double add should not be successful");
     }
 
@@ -62,10 +67,10 @@ contract TestAccountStorage is AccountStorage{
         Assert.equal(indexOf[accounts[3]], 1, "");
     }
 
-    function TestAccountClass() public {
+    function TestUserClass() public {
         for (uint i = 0; i < accounts.length; i++){
             if (exists(accounts[i]))
-            assert(accountClass(accounts[i]) == AccountClass(i % 3));
+            assert(userClass(accounts[i]) == UserClass(i % 3));
         }
     }
 }
