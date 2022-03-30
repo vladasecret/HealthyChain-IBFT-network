@@ -4,15 +4,26 @@ pragma solidity ^0.8.12;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/Node/NodeController.sol";
+import "../contracts/RegistryContract.sol";
+import "../contracts/Admin/Admin.sol";
 
 contract TestNodeController{
-    NodeController nodesController = new NodeController(address(0));
+    RegistryContract registryContract; 
+    NodeController nodesController;
+    Admin admin;
 
     string[] enodes;
     string constant DEF_HOST = "127.0.0.1";
     uint16 constant DEF_PORT= 3030;
     
     constructor(){
+        registryContract = new RegistryContract();
+        admin = new Admin(registryContract);
+        registryContract.setContractAddress(registryContract.ADMIN_CONTRACT(), address(admin));
+
+        nodesController = new NodeController(address(registryContract), address(0));
+        registryContract.setContractAddress(registryContract.NODE_CONTROLLER_CONTRACT(), address(nodesController));
+
         enodes.push("0x93df0dab486fc77ff7285f1d3fed4992ce96631af1c66f338acab9bb57deb3cdb2a2e6228f684b3058f8b214a8682a485e45c4c7f4047bd9f4a1e39d33ff47f3");
         enodes.push("0x93df0dab486fc77ff7285f1d3fed4992ce96631af1c66f338acab9bb57deb3cdb2a2e6228f684b3058f8b214a8682a485e45c4c7f4047bd9f4a1e39d33ff47f9");
         enodes.push("0x2b3b8f4bc24db317122711da044f4f6998aad429e31942fef51d1a5da2be59fa98a8a96e0561a910cbc9633975679594b4e8c0feb29bb86dca0b59af5438d3bb");
@@ -30,6 +41,7 @@ contract TestNodeController{
             bool res = nodesController.add(enodes[i], DEF_HOST, DEF_PORT);
             assert(res == true);
             Assert.equal(nodesController.connectionAllowed(enodes[i], DEF_HOST, DEF_PORT), true, "Node must be allowed");
+            Assert.equal(admin.isAuthorized(nodesController.countAddress(enodes[i])), true, "Administrator not added when adding a node");
         }
     }   
     
@@ -59,6 +71,5 @@ contract TestNodeController{
         Assert.equal(nodesController.connectionAllowed(enodes[0], DEF_HOST, DEF_PORT), false, "Failed to delete");        
     }
 
-
-
+    
 }

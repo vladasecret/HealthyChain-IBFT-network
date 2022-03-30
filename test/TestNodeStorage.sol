@@ -28,7 +28,6 @@ contract TestNodeStorage {
             assert(res);
         }
     }
-
     
     function testSize() public {
         Assert.equal(nodeStorage.size(), enodes.length, "Storage mustn't be empty");
@@ -55,6 +54,7 @@ contract TestNodeStorage {
         Assert.equal(false, nodeStorage.exists(enodes[0], "127.0.0.1", 2020), "(enodes[0], \"127.0.0.1\", 2020) mustn't exists");
         res = nodeStorage.add(enodes[0], "127.0.0.1", 2020);
         Assert.equal(res, true, "enodes[0]");
+        Assert.equal(nodeStorage.getEnodeIdNum(enodes[0]), 2, "Enode must have 2 item in storage");
         Assert.notEqual(nodeStorage.getIndexOf(enodes[0], "127.0.0.1", 2020), nodeStorage.getIndexOf(enodes[0], "", 0), "Elements must have different indexes");
         Assert.equal(size + 1, nodeStorage.size(), "");
     }

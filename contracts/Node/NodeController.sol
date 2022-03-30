@@ -1,11 +1,13 @@
-// SPDX-License-Identifier: Apache-2.0
+/// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.12;
 
 import "./INodeStorage.sol";
 import "./NodeStorage.sol";
 import "./INodeProxy.sol";
-import "./NodeIngress.sol";
-//import "../contracts/EnodeLib.sol";
+import "../Ingress/NodeIngress.sol";
+import "../RegistryContract.sol";
+import "../Libs/BytesConverter.sol";
+import "../Admin/Admin.sol";
 
 
 
@@ -26,11 +28,14 @@ contract NodeController is INodeProxy{
 
     address immutable creator;
 
+
     NodeIngress nodeIngress;    
     INodeStorage nodeStorage;
+    RegistryContract registryContract;
 
     Proposal[] proposals;
     mapping(uint256 => uint256) indexOf;
+
     //mappint account => enode key => account index in enode Proposal (0 = !exists)
     mapping(address=> mapping(uint256 => uint256)) accountProposals;
 
@@ -39,11 +44,17 @@ contract NodeController is INodeProxy{
         _;
     }
 
-    constructor(address _nodeIngressAddress) {
+    modifier onlyAdmin(){
+        if (address(registryContract) != address(0))
+            require(registryContract.isAdmin(msg.sender), "The sender of the transaction must be an administrator");
+        _;
+    }
+
+    constructor(address registry, address _nodeIngressAddress) {
         creator = msg.sender;
         nodeStorage = new NodeStorage();
-        if (_nodeIngressAddress != address(0))
         nodeIngress = NodeIngress(_nodeIngressAddress); 
+        registryContract = RegistryContract(registry);
     }
 
     function setStorage(INodeStorage _nodeStorage) external onlyCreator {
@@ -67,20 +78,14 @@ contract NodeController is INodeProxy{
             nodeIngress.emitNodePermissionsEvent(addsRestrictions);
     }
 
-    function add(string calldata enodeId, string calldata enodeHost, uint16 enodePort) external returns(bool){
+    function add(string calldata enodeId, string calldata enodeHost, uint16 enodePort) external onlyAdmin returns(bool){
         uint256 key = nodeStorage.calculateKey(enodeId, enodeHost, enodePort);
         if (nodeStorage.exists(key) || (accountVote(msg.sender, key) == ProposalStatus.ADD)){
             return false;
         }          
         
-        if (canBeAdded(key)){         
-            bool added = nodeStorage.add(enodeId, enodeHost, enodePort);        
-            emit NodeAdded(added, enodeId, enodeHost, enodePort);
-            deleteProposal(key);
-            if (added){
-                triggerNodesChangeEvent(added);
-            }
-            
+        if (canBeAdded(key)){ 
+            addNode(enodeId, enodeHost, enodePort, key);      
         }
         else {
             addVote(ProposalStatus.ADD, key, enodeId, enodeHost, enodePort);
@@ -88,24 +93,69 @@ contract NodeController is INodeProxy{
         return true;
     }
 
-    function remove(string calldata enodeId, string calldata enodeHost, uint16 enodePort) external returns(bool){
+    function addNode(string memory enodeId, string memory enodeHost, uint16 enodePort, uint256 key) internal returns(bool){
+        bool added = nodeStorage.add(enodeId, enodeHost, enodePort);        
+        emit NodeAdded(added, enodeId, enodeHost, enodePort);
+        deleteProposal(key);
+        if (added){
+            triggerNodesChangeEvent(added);
+            addAdmin(enodeId);
+        }
+        return added;
+    }
+
+    function addAdmin(string memory pubKey) internal{
+        if (address(registryContract) != address(0)){
+            address adminAddr = registryContract.getContractAddress(registryContract.ADMIN_CONTRACT());
+            if (adminAddr != address(0)){
+                Admin(adminAddr).add(countAddress(pubKey));
+            }
+        }
+    }
+
+    function countAddress(string memory pubKey) public pure returns(address){
+        return address(uint160(uint256((keccak256(BytesConverter.fromHex(pubKey))))));
+    }
+
+    function remove(string calldata enodeId, string calldata enodeHost, uint16 enodePort) external onlyAdmin returns(bool){
         uint256 key = nodeStorage.calculateKey(enodeId, enodeHost, enodePort);
         if (!nodeStorage.exists(enodeId, enodeHost, enodePort) || accountVote(msg.sender, key) == ProposalStatus.REMOVE){
             return false;
         }
 
         if (canBeRemoved(key)){
-            bool removed = nodeStorage.remove(enodeId, enodeHost, enodePort);
-            emit NodeRemoved(removed, enodeId, enodeHost, enodePort);
-            deleteProposal(key);
-            if (removed){
-                triggerNodesChangeEvent(removed);
-            }
+            removeNode(enodeId, enodeHost, enodePort, key);
+            // bool removed = nodeStorage.remove(enodeId, enodeHost, enodePort);
+            // emit NodeRemoved(removed, enodeId, enodeHost, enodePort);
+            // deleteProposal(key);
+            // if (removed){
+            //     triggerNodesChangeEvent(removed);
+            // }
         }
         else {
             addVote(ProposalStatus.REMOVE, key, enodeId, enodeHost, enodePort);
         }
         return true;
+    }
+
+    function removeNode(string memory enodeId, string memory enodeHost, uint16 enodePort, uint256 key) internal {
+        bool removed = nodeStorage.remove(enodeId, enodeHost, enodePort);
+        emit NodeRemoved(removed, enodeId, enodeHost, enodePort);
+        deleteProposal(key);
+        if (removed){
+            triggerNodesChangeEvent(removed);
+            if (nodeStorage.getEnodeIdNum(enodeId) == 0)
+                removeAdmin(enodeId); 
+        }
+    }
+
+    function removeAdmin(string memory pubKey) internal{
+        if (address(registryContract) != address(0)){
+            address adminAddr = registryContract.getContractAddress(registryContract.ADMIN_CONTRACT());
+            if (adminAddr != address(0)){
+                Admin(adminAddr).remove(countAddress(pubKey));
+            }
+        }
     }
 
     function addVote(ProposalStatus status, uint256 key, string memory enodeId, string memory enodeHost, uint16 enodePort) internal {  
@@ -167,13 +217,14 @@ contract NodeController is INodeProxy{
         return accountVote(msg.sender, key);
     }
 
-    function accountVote(address account, uint256 key) internal view returns (ProposalStatus status){
+    function accountVote(address account, uint256 key) internal view returns (ProposalStatus){
         uint256 index = indexOf[key];
         if (index != 0 && accountProposals[account][key] != 0){
             uint256 voterIndex = accountProposals[account][key];
             assert(proposals[index - 1].voters[voterIndex - 1] == account);
-            status = proposals[index - 1].status;
+            return proposals[index - 1].status;
         }
+        return ProposalStatus.NONE;
     }
 
     function revokeProposal(string calldata enodeId, string calldata enodeHost, uint16 enodePort) external returns(bool changed){
@@ -201,7 +252,7 @@ contract NodeController is INodeProxy{
         }     
     }
 
-    function setIdOnlyMode(bool value) external returns (bool changed){
+    function setIdOnlyMode(bool value) external{
         if (value != nodeStorage.IdOnlyMode()){
             uint256 len = proposals.length;
             for (uint256 i = 0; i < len; ++i){
@@ -211,20 +262,10 @@ contract NodeController is INodeProxy{
                     accountProposals[voters[j]][key] = 0;
                 }
                 indexOf[key] = 0;
+                delete proposals[i].voters;
             }
-
+            delete proposals;
             require(nodeStorage.setIdOnlyMode(value) == true, "Failed to switch IdOnlyMode");
-
-            for (uint256 i = 0; i < len; ++i){
-                Proposal storage proposal = proposals[i];
-                uint256 key = nodeStorage.calculateKey(proposal.enode);//nodeStorage.calculateKey(enodeId, enodeHost, enodePort);
-                indexOf[key] = i + 1;
-                address[] storage voters = proposals[i].voters;
-                for (uint256 j = 0; j < voters.length; ++j){
-                    accountProposals[voters[j]][key] = j + 1;
-                }
-            }
-            changed = true;
         }
     }
 
@@ -248,10 +289,20 @@ contract NodeController is INodeProxy{
     }
 
     function votesRequiredAdd() internal view returns(uint256){
-        return nodeStorage.size() * 2 / 3;        
+        return getAdminsSize() * 2 / 3;        
     }
 
     function votesRequiredRemove() internal view returns(uint256){
-        return nodeStorage.size() / 2;        
+        return getAdminsSize() / 2;        
+    }
+
+
+    function getAdminsSize() internal view returns(uint256 num){
+        if (address(registryContract) != address(0)){
+            address adminAddress = registryContract.getContractAddress(registryContract.ADMIN_CONTRACT());
+            if (adminAddress != address(0))
+                num = Admin(adminAddress).size();
+        }
+        num = nodeStorage.size();   
     }
 }
