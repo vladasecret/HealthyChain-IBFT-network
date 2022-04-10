@@ -4,6 +4,7 @@ import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.contractWrapper.Base.RawContract;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteCall;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class RegistryContract extends RawContract{
+public class RegistryContract extends RawContract {
     public static String BINARY = org.web3j.contractWrapper.generated.RegistryContract.BINARY;
 
     public static final String FUNC_ACCOUNT_CONTROLLER_CONTRACT = "ACCOUNT_CONTROLLER_CONTRACT";
@@ -68,7 +69,7 @@ public class RegistryContract extends RawContract{
      *
      * @param hexTransaction подписанная RawTransaction полученная в методе createContractRawTransaction
      * @param web3j
-     * @return RemoteCall<RegistryContract>, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
+     * @return RemoteCall, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
      *
      * @see RegistryContract#createContractRawTransaction(String, Web3j) 
      */
@@ -93,10 +94,9 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<byte[]>, вызов которого вернет значение константы ACCOUNT_CONTROLLER_CONTRACT.
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет значение константы ACCOUNT_CONTROLLER_CONTRACT.
      * ACCOUNT_CONTROLLER_CONTRACT - имя контракта AccountController, хранящееся в контракте как bytes32
-     *
-     * @return RemoteFunctionCall<byte[]>, вызов которого вернет значение константы ACCOUNT_CONTROLLER_CONTRACT
+     * @return RemoteFunctionCall, вызов которого вернет значение константы ACCOUNT_CONTROLLER_CONTRACT в byte[]
      */
     public RemoteFunctionCall<byte[]> ACCOUNT_CONTROLLER_CONTRACT() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_ACCOUNT_CONTROLLER_CONTRACT,
@@ -106,10 +106,10 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<byte[]>, вызов которого вернет значение константы ADMIN_CONTRACT.
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет значение константы ADMIN_CONTRACT.
      * ADMIN_CONTRACT - имя для контракта Admin, хранящееся как bytes32
      *
-     * @return RemoteFunctionCall<byte[]>, вызов которого вернет значение константы ADMIN_CONTRACT
+     * @return RemoteFunctionCall, вызов которого вернет значение константы ADMIN_CONTRACT в byte[]
      */
     public RemoteFunctionCall<byte[]> ADMIN_CONTRACT() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_ADMIN_CONTRACT,
@@ -119,10 +119,10 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<byte[]>, вызов которого вернет значение константы NODE_CONTROLLER_CONTRACT.
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет значение константы NODE_CONTROLLER_CONTRACT.
      * NODE_CONTROLLER_CONTRACT - имя для контракта NodeController, хранящееся как bytes32
      *
-     * @return RemoteFunctionCall<byte[]>, вызов которого вернет значение константы NODE_CONTROLLER_CONTRACT
+     * @return RemoteFunctionCall, вызов которого вернет значение константы NODE_CONTROLLER_CONTRACT в byte[]
      */
     public RemoteFunctionCall<byte[]> NODE_CONTROLLER_CONTRACT() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_NODE_CONTROLLER_CONTRACT,
@@ -132,11 +132,10 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) вернет RemoteFunctionCall<List>, вызов которого вернет List<byte[]> элементами которого будут имена всех записанных в
-     * RegistryContract контрактов
+     * Метод(eth_call) вернет RemoteFunctionCall, вызов которого вернет List элементами которого будут имена всех записанных в
+     * RegistryContract контрактов в видe byte[32]
      * <p>
      * Метод выполнит вызов от адреса, указанного как senderAddress в конструкторе
-     * @return RemoteFunctionCall<List>
      */
     public RemoteFunctionCall<List> getAllContractKeys() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETALLCONTRACTKEYS,
@@ -154,11 +153,11 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<String>, вызов которого вернет адрес контракта по его имени.
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет адрес контракта (String) по его имени.
      * <p>
      * Если для указанного имени не зарегистрирован контракт, то будет возвращено значение Address.DEFAULT ("0x0000000000000000000000000000000000000000")
      * @param name имя контракта в виде byte[32]
-     * @return RemoteFunctionCall<String>, который вернет адрес контракта
+     * @return RemoteFunctionCall, который вернет адрес контракта String
      */
     public RemoteFunctionCall<String> getContractAddress(byte[] name) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETCONTRACTADDRESS,
@@ -169,8 +168,7 @@ public class RegistryContract extends RawContract{
 
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<BigInteger>, вызов которого вернет количество зарегистрированных контрактов
-     * @return RemoteFunctionCall<BigInteger>
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет количество зарегистрированных контрактов BigInteger
      */
     public RemoteFunctionCall<BigInteger> getSize() {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETSIZE,
@@ -180,9 +178,8 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<Boolean>, вызов которого вернет результат проверки, зарегестрирован ли контракт по укказанному имени
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки, зарегистрирован ли контракт по указанному имени Boolean
      * @param name имя контракта в виду byte[32]
-     * @return RemoteFunctionCall<BigInteger>
      */
     public RemoteFunctionCall<Boolean> hasContractAddress(byte[] name) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_HASCONTRACTADDRESS,
@@ -192,10 +189,10 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<Boolean>, вызов которого вернет результат проверки является ли указанный адрес администратором.
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки является ли указанный адрес администратором (Boolean).
      * В случае, если в контракте по имени ADMIN_CONTRACT не зарегистрирован контракт, то метод будет возвращать true
      * @param account Ethereum адрес пользователя
-     * @return RemoteFunctionCall<Boolean>
+     * @return RemoteFunctionCall, вызов которого вернет Boolean
      */
     public RemoteFunctionCall<Boolean> isAdmin(String account) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_ISADMIN,
@@ -205,11 +202,11 @@ public class RegistryContract extends RawContract{
     }
 
     /**
-     * Метод(eth_call) возвращает RemoteFunctionCall<Boolean>, вызов которого вернет результат проверки является ли указанный адрес администратором
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки является ли указанный адрес администратором
      * или зарегистрирован как пользователь.
      * В случае, если по именам ADMIN_CONTRACT и ACCOUNT_CONTROLLER_CONTRACT не зарегистрированы контракты, то метод вернет true
      * @param account Ethereum адрес пользователя
-     * @return RemoteFunctionCall<Boolean>
+     * @return RemoteFunctionCall, вызов которого вернет Boolean
      */
     public RemoteFunctionCall<Boolean> isAuthorized(String account) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_ISAUTHORIZED,
@@ -247,7 +244,7 @@ public class RegistryContract extends RawContract{
      * <p>
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть создателем контракта. В противном случае транзакция выполнена не будет
      * @param hexTransaction транзакция, полученная в методе removeContractRawTransaction, подписанная создателем контракта
-     * @return RemoteCall<TransactionReceipt> TransactionReceipt хранит информацию о выполнении транзакции
+     * @return RemoteCall, который вернет TransactionReceipt (хранит информацию о выполнении транзакции)
      * @throws TransactionException
      * @see RegistryContract#removeContractRawTransaction(byte[])
      */
@@ -284,7 +281,7 @@ public class RegistryContract extends RawContract{
      * <p>
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть создателем контракта. В противном случае транзакция выполнена не будет
      * @param hexTransaction транзакция, полученная в методе setContractAddressRawTransaction, подписанная создателем контракта
-     * @return RemoteCall<TransactionReceipt> TransactionReceipt хранит информацию о выполнении транзакции
+     * @return RemoteCall, который вернет TransactionReceipt (хранит информацию о выполнении транзакции)
      * @throws TransactionException
      * @see RegistryContract#setContractAddressRawTransaction(byte[], String)
      */

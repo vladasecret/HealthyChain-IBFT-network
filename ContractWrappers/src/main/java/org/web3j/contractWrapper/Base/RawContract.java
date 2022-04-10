@@ -1,4 +1,4 @@
-package org.web3j.contractWrapper;
+package org.web3j.contractWrapper.Base;
 
 import org.web3j.abi.*;
 import org.web3j.abi.datatypes.*;
@@ -21,7 +21,6 @@ import org.web3j.utils.Numeric;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
