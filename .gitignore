@@ -10,5 +10,4 @@ ContractsWrappers/.gradle/*
 ContractsWrappers/.idea/
 !ContractsWrappers/src/
 !ContractsWrappers/
-docker-compose.yml
-
+Web3App/
