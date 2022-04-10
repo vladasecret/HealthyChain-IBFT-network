@@ -3,5 +3,11 @@
 **/data/besu.*
 script.sh
 artifacts/*
-build/contracts/*
+build/*
 contracts/Test.sol
+contracts/
+ContractsWrappers/.gradle/*
+ContractsWrappers/.idea/
+!ContractsWrappers/src/
+!ContractsWrappers/
+Web3App/

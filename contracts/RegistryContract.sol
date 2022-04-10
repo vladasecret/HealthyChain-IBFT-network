@@ -8,7 +8,7 @@ contract RegistryContract{
     bytes32 public ACCOUNT_CONTROLLER_CONTRACT = bytes32("accountController");
     bytes32 public ADMIN_CONTRACT = bytes32("admins"); 
 
-    address creator;
+    address immutable creator;
 
     // Registry mapping indexing
     mapping(bytes32 => address) internal registry;
@@ -36,7 +36,7 @@ contract RegistryContract{
         return registry[name] != address(0);
     }
 
-    function getContractAddress(bytes32 name) public view returns(address) {
+    function getContractAddress(bytes32 name) external view returns(address) {
         require(name > 0, "Contract name must not be empty.");
         return registry[name];
     }
@@ -60,7 +60,7 @@ contract RegistryContract{
     }
 
 
-    function isAdmin(address account) public view returns(bool) {
+    function isAdmin(address account) external view returns(bool) {
         if (registry[ADMIN_CONTRACT] == address(0)) {
             return true;
         } 

@@ -2,11 +2,15 @@ data-path="/node/data"
 host-allowlist=["*"]
 genesis-file="/config/genesis.json" 
 
+min-gas-price=0
+
 rpc-http-enabled=true 
-rpc-http-api=["ETH", "NET", "IBFT"]
+rpc-http-api=["WEB3", "ETH", "NET", "PERM", "IBFT"]
 rpc-http-cors-origins=["*"]
 rpc-http-port=8545
 rpc-http-host="127.0.0.1"
+
+revert-reason-enabled=true
 
 p2p-port=30303
 nat-method="DOCKER"
