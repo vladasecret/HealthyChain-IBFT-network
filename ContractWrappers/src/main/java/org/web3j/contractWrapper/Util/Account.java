@@ -9,7 +9,7 @@ import org.web3j.utils.Numeric;
 import java.io.IOException;
 
 public class Account {
-    private final Credentials credentials;
+    public final Credentials credentials;
     private long chainId;
     public Account(String privateKey, Web3j web3j) throws IOException {
         credentials = Credentials.create(privateKey);

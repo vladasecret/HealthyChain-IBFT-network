@@ -129,7 +129,7 @@ contract UserContract{
             PermissionsContract permContract = PermissionsContract(records[i].permissionsContractAddress);
             //if (permContract.hasAccess(msg.sender, msg.sender)){
                 (bytes memory smk, bytes memory encodedHash) = permContract.getMetadata(msg.sender);
-                res[i] = abi.encodePacked(smk, encodedHash);
+                res[i] = abi.encodePacked(records[i].permissionsContractAddress, smk, encodedHash);
             //}
         }
         return res;
@@ -137,12 +137,12 @@ contract UserContract{
 
     function getRecordsMetadataByUser(address associatedUser) external view onlyOwner returns (bytes[] memory metadata){
         require(isAssociated(associatedUser), "User not associated");
-        bytes[] memory res = new bytes[](0);
         address[] storage permissionsArr = recordsByUser[associatedUser];
+        bytes[] memory res = new bytes[](permissionsArr.length);
         for (uint256 i = 0; i < permissionsArr.length; ++i){
             if (PermissionsContract(permissionsArr[i]).hasAccess(msg.sender, msg.sender)){
                 (bytes memory smk, bytes memory encodedHash) = PermissionsContract(permissionsArr[i]).getMetadata(msg.sender);
-                res[i] = abi.encodePacked(smk, encodedHash);
+                res[i] = abi.encodePacked(permissionsArr[i], smk, encodedHash);
             }
         }
         return res;

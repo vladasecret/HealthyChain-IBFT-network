@@ -38,23 +38,7 @@ public class AccountController extends RawContract {
 
     public static final String FUNC_TRANSACTIONALLOWED = "transactionAllowed";
 
-//    @Deprecated
-//    protected AccountController(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
-//        super(BINARY, contractAddress, web3j, credentials, gasPrice, gasLimit);
-//    }
-//
-//    protected AccountController(String contractAddress, Web3j web3j, Credentials credentials, ContractGasProvider contractGasProvider) {
-//        super(BINARY, contractAddress, web3j, credentials, contractGasProvider);
-//    }
-//
-//    @Deprecated
-//    protected AccountController(String contractAddress, Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
-//        super(BINARY, contractAddress, web3j, transactionManager, gasPrice, gasLimit);
-//    }
-//
-//    protected AccountController(String contractAddress, Web3j web3j, TransactionManager transactionManager, ContractGasProvider contractGasProvider) {
-//        super(BINARY, contractAddress, web3j, transactionManager, contractGasProvider);
-//    }
+
 
     protected AccountController(String contractAddress, String senderAddress, Web3j web3j){
         super(BINARY, contractAddress, senderAddress, web3j);
