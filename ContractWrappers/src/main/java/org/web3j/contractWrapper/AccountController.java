@@ -9,6 +9,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.contractWrapper.Base.RawContract;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
@@ -21,6 +22,8 @@ import org.web3j.tx.exceptions.ContractCallException;
 
 public class AccountController extends RawContract {
     public static final String BINARY = org.web3j.contractWrapper.generated.AccountController.BINARY;
+
+    public static final String FUNC_GETUSERCLASS = "getUserClass";
 
     public static final String FUNC_GETUSERCONTRACTADDRESS = "getUserContractAddress";
 
@@ -99,6 +102,20 @@ public class AccountController extends RawContract {
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, account)),
                 Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
+    }
+
+    /**
+     * Метод возвращает RemoteFunctionCall, вызов которого вернет класс пользователя _address типа BigInteger (UserClass).
+     * если аккаунт не зарегистрирован, то будет вызвана ошибка TransactionException
+     * @param _address Ethereum адрес пользователя, который зарегистрирован в системе
+     * @return RemoteFunctionCall, который вернет BigInteger - класс пользователя (можно конвертировать в UserClass)
+     * @see UserClass
+     */
+    public RemoteFunctionCall<BigInteger> getUserClass(String _address) {
+        final Function function = new Function(FUNC_GETUSERCLASS,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _address)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {}));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
 
@@ -232,4 +249,6 @@ public class AccountController extends RawContract {
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallSignedTransaction(hexTransaction, function);
     }
+
+    public enum UserClass {PATIENT, DOCTOR, PROVIDER, DELETED}
 }

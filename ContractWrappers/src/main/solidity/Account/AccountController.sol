@@ -94,6 +94,10 @@ contract AccountController is IAccountProxy, IAccountController{
         return accountStorage.getUserContractAddress(account);  
     }
 
+    function getUserClass(address _address) external view returns(UserClass){
+        return accountStorage.getUserClass(_address);
+    }
+
     /// @notice Adds a new user with the provider class to AccountStorage. The specified account must be registered as an administrator. Function can only be called by another administrator
     /// @dev Will be reverted if the specified user is not user (address associated with code), already registered, is not admin
     /// @param account Ethereum address of the user we want to register
@@ -127,4 +131,6 @@ contract AccountController is IAccountProxy, IAccountController{
         address userContractAddress = userContractFactory.create(account, UserClass.PATIENT);
         accountStorage.add(account, UserClass.PATIENT, userContractAddress);
     }
+
+
 }
