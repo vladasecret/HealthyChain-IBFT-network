@@ -1,5 +1,5 @@
+import healthyLife.contractWrappers.generated.*;
 import org.web3j.abi.datatypes.Address;
-import org.web3j.contractWrapper.generated.*;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;

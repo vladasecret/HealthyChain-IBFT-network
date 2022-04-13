@@ -13,7 +13,7 @@ contract UserContract{
         address associatedUser;
     }
         
-    address immutable owner;
+    address owner;
 
     RegistryContract public registryContract; 
     RelationsContract public relationsContract;
@@ -40,7 +40,7 @@ contract UserContract{
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "The sender must be the creator of the contract");
+        require(msg.sender == owner, "The sender must be the owner of the contract");
         _;
     }
 
@@ -48,7 +48,15 @@ contract UserContract{
         owner = _owner;
         registryContract = RegistryContract(_registryContractAddress);
         relationsContract = new RelationsContract();
-    } 
+    }
+
+    function getOwner() external view returns(address){
+        return owner;
+    }
+
+    function hasActiveRelation(address user) external view returns(bool){
+        return relationsContract.getStatus(user) == RelationsContract.RelationStatus.ACTIVE;
+    }
 
     function initRelation(address user) onlyOwner external{
         require(registryContract.isAuthorized(user), "Unable to communicate with unauthorized user");
