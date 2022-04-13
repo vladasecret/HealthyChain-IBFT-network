@@ -13,7 +13,7 @@ contract UserContract{
         address associatedUser;
     }
         
-    address immutable owner;
+    address owner;
 
     RegistryContract public registryContract; 
     RelationsContract public relationsContract;
@@ -40,7 +40,7 @@ contract UserContract{
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "The sender must be the creator of the contract");
+        require(msg.sender == owner, "The sender must be the owner of the contract");
         _;
     }
 
@@ -48,7 +48,19 @@ contract UserContract{
         owner = _owner;
         registryContract = RegistryContract(_registryContractAddress);
         relationsContract = new RelationsContract();
-    } 
+    }
+
+    function getOwner() external view returns(address){
+        return owner;
+    }
+
+    function hasActiveRelation(address user) external view returns(bool){
+        return relationsContract.getStatus(user) == RelationsContract.RelationStatus.ACTIVE;
+    }
+
+    function getRelationStatus(address user) external view returns(RelationsContract.RelationStatus){
+        return relationsContract.getStatus(user);
+    }
 
     function initRelation(address user) onlyOwner external{
         require(registryContract.isAuthorized(user), "Unable to communicate with unauthorized user");
@@ -75,9 +87,14 @@ contract UserContract{
         return relationsContract.getInitialedRelations();
     }
 
-    function getAllRelations() onlyOwner external view returns(bytes[] memory){
+//    function getAllRelations() onlyOwner external view returns(bytes[] memory){
+//        return relationsContract.getAllRelations();
+//    }
+
+    function getAllRelations() onlyOwner external view returns(RelationsContract.RelationInfo[] memory){
         return relationsContract.getAllRelations();
     }
+
 
     function getAssociatedUsers() onlyOwner external view returns(address[] memory){
         return associatedUsers;
@@ -129,7 +146,7 @@ contract UserContract{
             PermissionsContract permContract = PermissionsContract(records[i].permissionsContractAddress);
             //if (permContract.hasAccess(msg.sender, msg.sender)){
                 (bytes memory smk, bytes memory encodedHash) = permContract.getMetadata(msg.sender);
-                res[i] = abi.encodePacked(smk, encodedHash);
+                res[i] = abi.encodePacked(records[i].permissionsContractAddress, smk, encodedHash);
             //}
         }
         return res;
@@ -137,12 +154,12 @@ contract UserContract{
 
     function getRecordsMetadataByUser(address associatedUser) external view onlyOwner returns (bytes[] memory metadata){
         require(isAssociated(associatedUser), "User not associated");
-        bytes[] memory res = new bytes[](0);
         address[] storage permissionsArr = recordsByUser[associatedUser];
+        bytes[] memory res = new bytes[](permissionsArr.length);
         for (uint256 i = 0; i < permissionsArr.length; ++i){
             if (PermissionsContract(permissionsArr[i]).hasAccess(msg.sender, msg.sender)){
                 (bytes memory smk, bytes memory encodedHash) = PermissionsContract(permissionsArr[i]).getMetadata(msg.sender);
-                res[i] = abi.encodePacked(smk, encodedHash);
+                res[i] = abi.encodePacked(permissionsArr[i], smk, encodedHash);
             }
         }
         return res;

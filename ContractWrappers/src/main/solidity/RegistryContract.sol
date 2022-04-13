@@ -9,7 +9,7 @@ contract RegistryContract{
     bytes32 public ACCOUNT_CONTROLLER_CONTRACT = bytes32("accountController");
     bytes32 public ADMIN_CONTRACT = bytes32("admins"); 
 
-    address immutable creator;
+    address creator;
 
     // Registry mapping indexing
     mapping(bytes32 => address) internal registry;

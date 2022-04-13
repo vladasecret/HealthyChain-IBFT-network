@@ -15,7 +15,7 @@ interface IAccountStorage{
     function size() external view returns (uint256);
     function exists(address user) external view returns (bool);
     function add(address user, UserClass class, address userContractAddress) external returns (bool);
-    function remove(address user) external  returns (bool);
+    function remove(address user) external;
     function getUserClass(address user) external view returns(UserClass);
     function getUserContractAddress(address user) external view  returns(address);
     function getAccountInfo(address user) external view returns(address, UserClass, address);

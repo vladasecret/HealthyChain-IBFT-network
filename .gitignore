@@ -8,6 +8,4 @@ contracts/Test.sol
 contracts/
 ContractsWrappers/.gradle/*
 ContractsWrappers/.idea/
-!ContractsWrappers/src/
-!ContractsWrappers/
 Web3App/

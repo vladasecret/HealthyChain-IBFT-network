@@ -11,9 +11,13 @@ contract AccountIngress {
 
     modifier creatorOnly(){
         if (creator != address(0)){
-            require(msg.sender == creator);
+            require(msg.sender == creator, "The sender must be creator of the contract");
         }
         _;
+    }
+
+    constructor(){
+        creator = msg.sender;
     }
 
     function setRegistyContract(address _address) external creatorOnly {
