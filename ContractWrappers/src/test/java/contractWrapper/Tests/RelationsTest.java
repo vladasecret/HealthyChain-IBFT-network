@@ -7,15 +7,13 @@ import healthyLife.contractWrappers.base.RawContract;
 import healthyLife.contractWrappers.generated.AccountController;
 import healthyLife.contractWrappers.generated.UserContractFactory;
 import healthyLife.contractWrappers.user.UserContract;
-import healthyLife.contractWrappers.util.Account;
+import healthyLife.serverApi.util.Account;
 import healthyLife.serverApi.models.relation.RelationInfoModel;
 import healthyLife.serverApi.models.relation.RelationStatus;
 import healthyLife.serverApi.wrappers.AccountControllerApi;
 import healthyLife.serverApi.wrappers.RegistryContractApi;
 import healthyLife.serverApi.wrappers.user.UserContractApi;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.web3j.EVMTest;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
@@ -26,12 +24,12 @@ import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Numeric;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @EVMTest
-public class UserContractTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class RelationsTest {
 
 
     static final String providerPrivateKey = "c82aa158c161b6c4fe7c9658a09a245ed069ec79ec30dfbbb8bd199c3f1e2d45";
@@ -122,16 +120,10 @@ public class UserContractTest {
     }
 
     @Test
+    @Order(1)
     public void isRegisteredTest(){
         try {
             assertTrue(accountController.isRegistered(patient.getAddress()).send());
-            healthyLife.contractWrappers.generated.UserContract userContract = healthyLife.contractWrappers.generated.UserContract
-                    .load(accountController.getUserContractAddress(patient.getAddress()).send(),
-                            web3j,
-                            patient.credentials,
-                            new StaticGasProvider(RawContract.GAS_PRICE, RawContract.GAS_LIMIT));
-            assertEquals(patient.getAddress(), userContract.getOwner().send());
-
             assertTrue(accountController.isRegistered(doctor.getAddress()).send());
             assertTrue(accountController.isRegistered(provider.getAddress()).send());
         }
@@ -141,7 +133,26 @@ public class UserContractTest {
     }
 
     @Test
-    public void InitAndConfirmRelationTest(){
+    @Order(2)
+    public void ConfirmInactiveRelationTest(){
+        try {
+            String patientContractAddress = accountController.getUserContractAddress(patient.getAddress()).send();
+            UserContractApi patientContract = UserContract.load(patientContractAddress, patient.getAddress(), web3j);
+
+            RawTransaction confirmRaw = patientContract.confirmRelationRawTransaction(doctor.getAddress(), true);
+            TransactionReceipt confirmReceipt = patientContract.executeConfirmRelation(patient.signTransaction(confirmRaw)).send();
+            assertFalse(confirmReceipt.isStatusOK());
+            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor.getAddress()).send().intValue()],
+                    RelationStatus.INACTIVE);
+        }
+        catch (Exception exc){
+            fail(exc.getMessage());
+        }
+    }
+
+    @Test
+    @Order(3)
+    public void ConfirmInitialedRelationTest(){
         try {
             String patientContractAddress = accountController.getUserContractAddress(patient.getAddress()).send();
             UserContractApi patientContract = UserContract.load(patientContractAddress, patient.getAddress(), web3j);
@@ -153,12 +164,46 @@ public class UserContractTest {
             TransactionReceipt initTransactionReceipt = patientContract
                     .executeInitRelation(patient.signTransaction(initRelationRaw))
                     .send();
+
             assertTrue(initTransactionReceipt.isStatusOK());
+            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor.getAddress()).send().intValue()],
+                    RelationStatus.INITIALED);
+            assertTrue(patientContract.getInitialedRelations().send().contains(doctor.getAddress()));
+            assertEquals(RelationStatus.values()[doctorContract.getRelationStatus(patient.getAddress()).send().intValue()],
+                    RelationStatus.REQUESTED);
+            assertTrue(doctorContract.getRelationRequests().send().contains(patient.getAddress()));
 
-            List<String> requests = doctorContract.getRelationRequests().send();
-            assertTrue(requests.contains(patient.getAddress()), "contract doesn't contain request");
+            RawTransaction confirmRaw = patientContract.confirmRelationRawTransaction(doctor.getAddress(), true);
+            TransactionReceipt confirmReceipt = patientContract.executeConfirmRelation(patient.signTransaction(confirmRaw)).send();
+            assertFalse(confirmReceipt.isStatusOK());
 
-            RawTransaction confirmRaw = doctorContract.confirmRelationRawTransaction(requests.get(0), true);
+            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor.getAddress()).send().intValue()],
+                    RelationStatus.INITIALED);
+            assertEquals(RelationStatus.values()[doctorContract.getRelationStatus(patient.getAddress()).send().intValue()],
+                    RelationStatus.REQUESTED);
+
+        }
+        catch (Exception exc){
+            fail(exc.getMessage());
+        }
+    }
+
+    @Test
+    @Order(4)
+    public void ConfirmRequestedRelationTest(){
+        try {
+            String patientContractAddress = accountController.getUserContractAddress(patient.getAddress()).send();
+            UserContractApi patientContract = UserContract.load(patientContractAddress, patient.getAddress(), web3j);
+
+            String doctorContractAddress = accountController.getUserContractAddress(doctor.getAddress()).send();
+            UserContractApi doctorContract = UserContract.load(doctorContractAddress, doctor.getAddress(), web3j);
+
+            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor.getAddress()).send().intValue()],
+                    RelationStatus.INITIALED);
+            assertEquals(RelationStatus.values()[doctorContract.getRelationStatus(patient.getAddress()).send().intValue()],
+                    RelationStatus.REQUESTED);
+
+            RawTransaction confirmRaw = doctorContract.confirmRelationRawTransaction(patient.getAddress(), true);
             TransactionReceipt confirmReceipt = doctorContract.executeConfirmRelation(doctor.signTransaction(confirmRaw)).send();
             String reason = confirmReceipt.isStatusOK() ? "" :
                     new String(Numeric.hexStringToByteArray(Numeric.cleanHexPrefix(confirmReceipt.getRevertReason())));
@@ -166,15 +211,14 @@ public class UserContractTest {
             assertTrue(patientContract.hasActiveRelation(doctor.getAddress()).send());
             assertTrue(doctorContract.hasActiveRelation(patient.getAddress()).send());
 
-            confirmRaw = doctorContract.confirmRelationRawTransaction(patient.getAddress(), false);
-            TransactionReceipt confirmReciept = doctorContract.executeConfirmRelation(doctor.signTransaction(confirmRaw)).send();
-
-            assertFalse(confirmReciept.isStatusOK());
         }
         catch (Exception exc){
             fail(exc.getMessage());
         }
     }
+
+
+
 
     @Test
     public void getAllRelationsTest(){
@@ -266,15 +310,6 @@ public class UserContractTest {
             assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor2.getAddress()).send().intValue()],
                     RelationStatus.INITIALED);
 
-//            RawTransaction confirmRawTransaction = doctorContract.confirmRelationRawTransaction(patient.getAddress(), true);
-//            TransactionReceipt confirmReceipt = doctorContract.executeConfirmRelation(doctor2.signTransaction(confirmRawTransaction)).send();
-//            assertTrue(confirmReceipt.isStatusOK());
-//
-//            assertEquals(RelationStatus.values()[doctorContract.getRelationStatus(patient.getAddress()).send().intValue()],
-//                    RelationStatus.ACTIVE);
-//            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor2.getAddress()).send().intValue()],
-//                    RelationStatus.ACTIVE);
-
             RawTransaction rejectRawTransaction = patientContract.rejectRelationRawTransaction(doctor2.getAddress());
             TransactionReceipt rejectReceipt = patientContract
                     .executeRejectRelation(patient.signTransaction(rejectRawTransaction))
@@ -309,15 +344,6 @@ public class UserContractTest {
                     RelationStatus.REQUESTED);
             assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor2.getAddress()).send().intValue()],
                     RelationStatus.INITIALED);
-
-//            RawTransaction confirmRawTransaction = doctorContract.confirmRelationRawTransaction(patient.getAddress(), true);
-//            TransactionReceipt confirmReceipt = doctorContract.executeConfirmRelation(doctor2.signTransaction(confirmRawTransaction)).send();
-//            assertTrue(confirmReceipt.isStatusOK());
-//
-//            assertEquals(RelationStatus.values()[doctorContract.getRelationStatus(patient.getAddress()).send().intValue()],
-//                    RelationStatus.ACTIVE);
-//            assertEquals(RelationStatus.values()[patientContract.getRelationStatus(doctor2.getAddress()).send().intValue()],
-//                    RelationStatus.ACTIVE);
 
             RawTransaction rejectRawTransaction = doctorContract.rejectRelationRawTransaction(patient.getAddress());
             TransactionReceipt rejectReceipt = doctorContract
@@ -366,6 +392,8 @@ public class UserContractTest {
             fail(exc.getMessage());
         }
     }
+
+
 
 
         @AfterAll

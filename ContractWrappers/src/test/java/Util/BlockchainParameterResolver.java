@@ -4,7 +4,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
-import healthyLife.contractWrappers.util.Account;
+import healthyLife.serverApi.util.Account;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 

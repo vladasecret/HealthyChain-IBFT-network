@@ -178,10 +178,10 @@ public class RegistryContract extends RawContract implements RegistryContractApi
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
-    /**
-     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки, зарегистрирован ли контракт по указанному имени Boolean
-     * @param name имя контракта в виду byte[32]
-     */
+//    /**
+//     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки, зарегистрирован ли контракт по указанному имени Boolean
+//     * @param name имя контракта в виду byte[32]
+//     */
     public RemoteFunctionCall<Boolean> hasContractAddress(byte[] name) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_HASCONTRACTADDRESS,
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Bytes32(name)),
