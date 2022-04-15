@@ -1,27 +1,17 @@
 import healthyLife.contractWrappers.base.RawContract;
 import healthyLife.contractWrappers.generated.AccountIngress;
 import healthyLife.contractWrappers.generated.NodeIngress;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
-import healthyLife.contractWrappers.RegistryContract;
-import healthyLife.contractWrappers.util.Account;
+import healthyLife.serverApi.util.Account;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class Main {
     static final BigInteger GAS_PRICE = BigInteger.ZERO;

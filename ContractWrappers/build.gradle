@@ -5,7 +5,7 @@ plugins {
 
 web3j {
     generatedPackageName = "healthyLife.contractWrappers.generated"
-    includedContracts = ['RegistryContract', 'AccountController', 'UserContractFactory','Admin', 'AccountIngress', 'NodeIngress', 'NodeController', 'UserContract', 'PatientContract', 'DoctorContract']
+    includedContracts = ['PermissionsContract', 'RegistryContract', 'AccountController', 'UserContractFactory','Admin', 'AccountIngress', 'NodeIngress', 'NodeController', 'UserContract', 'PatientContract', 'DoctorContract']
     //includedContracts = []
 }
 

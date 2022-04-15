@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.web3j.EVMTest;
 import org.web3j.abi.datatypes.Address;
-import healthyLife.contractWrappers.util.Account;
+import healthyLife.serverApi.util.Account;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -39,8 +39,8 @@ public class RegistryContractTest {
         account = new Account(privateKey, web3j);
 
         RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(account.getAddress(), web3j);
-        //registryContract = RegistryContract.deploy(account.signTransaction(createContractTransaction), web3j).send();
-        registryContract = RegistryContract.load("0x0000000000000000000000000000000000007777", account.getAddress(), web3j);
+        registryContract = RegistryContract.deploy(account.signTransaction(createContractTransaction), web3j).send();
+        //registryContract = RegistryContract.load("0x0000000000000000000000000000000000007777", account.getAddress(), web3j);
     }
 
     @Test

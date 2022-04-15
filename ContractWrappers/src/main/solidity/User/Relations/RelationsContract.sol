@@ -16,12 +16,6 @@ contract RelationsContract{
         RelationsContract relationsContract;
     }
 
-    mapping (address=>uint256) initIndex;
-    address[] initialed;
-
-    mapping (address => uint256) requestIndex;
-    address[] requested;
-
     RelationInfo[] relations;
     mapping (address => uint256) indexOf;
 
@@ -62,14 +56,6 @@ contract RelationsContract{
         _;
     }
 
-    function getRelationRequests() userContractOnly external view returns(address[] memory){
-        return requested;
-    }
-
-    function getInitialedRelations() userContractOnly external view returns(address[] memory){
-        return initialed;
-    }
-
     function initRelation(address user, RelationsContract relationContract) external userContractOnly{
         //uint256 index = indexOf[user];
         RelationStatus status = getStatus(user);
@@ -82,8 +68,8 @@ contract RelationsContract{
             relationContract.requestRelation();
             addRelationItem(user, RelationStatus.INITIALED, relationContract);
 
-            initialed.push(user);
-            initIndex[user] = initialed.length;
+            // initialed.push(user);
+            // initIndex[user] = initialed.length;
         }
         
     }
@@ -101,7 +87,7 @@ contract RelationsContract{
         else {
             deleteRelation(user);
         }
-        deleteFrom(user, requestIndex, requested);
+        // deleteFrom(user, requestIndex, requested);
     }
 
     function rejectRelation(address user) public userContractOnly {
@@ -114,9 +100,9 @@ contract RelationsContract{
             return;
         }
         relations[indexOf[user] - 1].relationsContract.rejectRelation();
-        if (status == RelationStatus.INITIALED){
-            deleteFrom(user, initIndex, initialed);
-        }
+        // if (status == RelationStatus.INITIALED){
+        //     deleteFrom(user, initIndex, initialed);
+        // }
         deleteRelation(user);
             
         
@@ -126,10 +112,10 @@ contract RelationsContract{
     function rejectRelation() external registeredOnly senderIsRelationContract{
         address user = tx.origin;
         RelationStatus status = getStatus(user);
-        require(status == RelationStatus.ACTIVE || status == RelationStatus.REQUESTED);
-        if (status == RelationStatus.REQUESTED){
-            deleteFrom(user, requestIndex, requested);
-        }
+        require(status == RelationStatus.ACTIVE || status == RelationStatus.REQUESTED, "Incorrect status to reject");
+        // if (status == RelationStatus.REQUESTED){
+        //     deleteFrom(user, requestIndex, requested);
+        // }
         deleteRelation(user);
     }
 
@@ -146,7 +132,7 @@ contract RelationsContract{
             deleteRelation(user);                    
         }
 
-        deleteFrom(user, initIndex, initialed);
+        // deleteFrom(user, initIndex, initialed);
     }
 
 
@@ -154,8 +140,8 @@ contract RelationsContract{
     function requestRelation() external registeredOnly senderIsRelationContract{
         address user = tx.origin;
         addRelationItem(user, RelationStatus.REQUESTED, RelationsContract(msg.sender));
-        requested.push(user);
-        requestIndex[user] = requested.length;
+        // requested.push(user);
+        // requestIndex[user] = requested.length;
         emit requestAdded(user);
     }
 
@@ -165,23 +151,10 @@ contract RelationsContract{
         return RelationStatus.INACTIVE;
     }
 
-//    function getAllRelations() external view returns(bytes[] memory){
-//        bytes[] memory res = new bytes[](relations.length);
-//        for (uint256 i = 0; i < relations.length; ++i){
-//            RelationInfo storage relation = relations[i];
-//            res[i] = abi.encodePacked(relation.user, uint256(relation.status));
-//        }
-//        return res;
-//    }
+
 
     function getAllRelations() external view returns(RelationInfo[] memory){
         return relations;
-//        bytes[] memory res = new bytes[](relations.length);
-//        for (uint256 i = 0; i < relations.length; ++i){
-//            RelationInfo storage relation = relations[i];
-//            res[i] = abi.encodePacked(relation.user, uint256(relation.status));
-//        }
-//        return res;
     }
 
     function addRelationItem(address user, RelationStatus status, RelationsContract relationContract) internal {

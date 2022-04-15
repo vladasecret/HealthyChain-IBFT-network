@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import healthyLife.contractWrappers.base.RawContract;
 import healthyLife.contractWrappers.RegistryContract;
-import healthyLife.contractWrappers.util.Account;
+import healthyLife.serverApi.util.Account;
 import healthyLife.contractWrappers.generated.UserContractFactory;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
