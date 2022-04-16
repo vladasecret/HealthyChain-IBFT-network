@@ -34,7 +34,6 @@ public class RawContract {
     public static final BigInteger GAS_LIMIT = BigInteger.valueOf(999999999999999L);
     public static final BigInteger GAS_PRICE= BigInteger.ZERO;
 
-    protected final String contractBinary;
     protected String contractAddress;
     protected String senderAddress;
     protected static DefaultBlockParameter defaultBlockParameter = DefaultBlockParameterName.PENDING;
@@ -42,11 +41,10 @@ public class RawContract {
 
     protected TransactionReceiptProcessor transactionReceiptProcessor;
 
-    protected RawContract(String contractBinary, String contractAddress, String senderAddress, Web3j web3j){
+    protected RawContract(String contractAddress, String senderAddress, Web3j web3j){
         if (!(WalletUtils.isValidAddress(contractAddress) && WalletUtils.isValidAddress(senderAddress))){
             throw new IllegalArgumentException("Not valid address");
         }
-        this.contractBinary = contractBinary;
         this.contractAddress = contractAddress;
         this.senderAddress = senderAddress;
         this.web3j = web3j;
@@ -66,12 +64,6 @@ public class RawContract {
             throw new IllegalArgumentException("Not valid address: " + newAddress);
         senderAddress = newAddress;
 
-    }
-
-    protected static RawTransaction createContractTransaction(String fromAddress, Web3j web3j, String contractBinary) {
-        RawTransaction transaction = RawTransaction
-                .createContractTransaction(getNonce(fromAddress, web3j), GAS_PRICE, GAS_LIMIT, BigInteger.ZERO, contractBinary);
-        return transaction;
     }
 
     protected static BigInteger getNonce(String address, Web3j web3j) {
