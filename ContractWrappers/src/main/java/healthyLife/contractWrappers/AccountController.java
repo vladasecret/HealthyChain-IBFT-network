@@ -23,7 +23,6 @@ import org.web3j.tx.exceptions.ContractCallException;
 
 
 public class AccountController extends RawContract implements AccountControllerApi {
-    public static final String BINARY = healthyLife.contractWrappers.generated.AccountController.BINARY;
 
     public static final String FUNC_GETUSERCLASS = "getUserClass";
 
@@ -46,7 +45,7 @@ public class AccountController extends RawContract implements AccountControllerA
 
 
     protected AccountController(String contractAddress, String senderAddress, Web3j web3j){
-        super(BINARY, contractAddress, senderAddress, web3j);
+        super(contractAddress, senderAddress, web3j);
     }
 
 //    /**
@@ -64,33 +63,7 @@ public class AccountController extends RawContract implements AccountControllerA
         }
         return new AccountController(contractAddress, senderAddress, web3j);
     }
-
-
-    public static RawTransaction createContractRawTransaction(String fromAddress, Web3j web3j, String _registryContract, String _userContractFactory) {
-        String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, _registryContract),
-                new org.web3j.abi.datatypes.Address(160, _userContractFactory)));
-        return RawTransaction
-                .createContractTransaction(getNonce(fromAddress, web3j), GAS_PRICE, GAS_LIMIT, BigInteger.ZERO, BINARY + encodedConstructor);
-    }
-
-//    /**
-//     * Метод возвращает объект RemoteCall, вызов которого развернет новый контракт AccountController в сети, установленной параметром web3j,
-//     * и в случае успеха вернет новый объект AccountController
-//     *  <p>
-//     * Параметр hexTransaction должен быть подписанной RawTransaction, полученной в методе createContractRawTransaction.
-//     * При вызове RemoteCall происходит проверка полей транзакции, в случае их несоответствия (попытки подмены кода)
-//     * вызов RemoteCall завершится с ошибкой TransactionException
-//     *
-//     * @param hexTransaction подписанная RawTransaction полученная в методе createContractRawTransaction
-//     * @param web3j Web3j instance
-//     * @return RemoteCall, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
-//
-//     * @see AccountController#createContractRawTransaction(String, Web3j, String, String)
-//     */
-    public static RemoteCall<AccountController> deploy(String hexTransaction, Web3j web3j) {
-        return deployRemoteCall(AccountController.class, BINARY, hexTransaction, web3j);
-    }
-
+    
 //    /**
 //     * Метод возвращает RemoteFunctionCall, вызов которого вернет адрес контракта UserContract.
 //     * В случае если указанный в параметрах аккаунт является пациентом, по полученному адресу можно загрузить PatientContract

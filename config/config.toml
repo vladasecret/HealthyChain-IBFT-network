@@ -10,6 +10,7 @@ rpc-http-cors-origins=["*"]
 rpc-http-port=8545
 rpc-http-host="127.0.0.1"
 
+sync-mode="FULL"
 revert-reason-enabled=true
 
 p2p-port=30303

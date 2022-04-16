@@ -27,7 +27,6 @@ import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.exceptions.ContractCallException;
 
 public class NodeController extends RawContract {
-    public static final String BINARY = healthyLife.contractWrappers.generated.NodeController.BINARY;
 
     public static final String FUNC_ADD = "add";
 
@@ -66,7 +65,7 @@ public class NodeController extends RawContract {
     ;
 
     protected NodeController(String contractAddress, String senderAddress, Web3j web3j){
-        super(BINARY, contractAddress, senderAddress, web3j);
+        super(contractAddress, senderAddress, web3j);
     }
 
     /**
@@ -84,162 +83,6 @@ public class NodeController extends RawContract {
         }
         return new NodeController(contractAddress, senderAddress, web3j);
     }
-
-//    public List<NodeAddedEventResponse> getNodeAddedEvents(TransactionReceipt transactionReceipt) {
-//        List<RawContract.EventValuesWithLog> valueList = extractEventParametersWithLog(NODEADDED_EVENT, transactionReceipt);
-//        ArrayList<NodeAddedEventResponse> responses = new ArrayList<NodeAddedEventResponse>(valueList.size());
-//        for (RawContract.EventValuesWithLog eventValues : valueList) {
-//            NodeAddedEventResponse typedResponse = new NodeAddedEventResponse();
-//            typedResponse.log = eventValues.getLog();
-//            typedResponse.added = (Boolean) eventValues.getNonIndexedValues().get(0).getValue();
-//            typedResponse.enodeId = (String) eventValues.getNonIndexedValues().get(1).getValue();
-//            typedResponse.enodeHost = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//            typedResponse.enodePort = (BigInteger) eventValues.getNonIndexedValues().get(3).getValue();
-//            responses.add(typedResponse);
-//        }
-//        return responses;
-//    }
-//
-//    public Flowable<NodeAddedEventResponse> nodeAddedEventFlowable(EthFilter filter) {
-//        return web3j.ethLogFlowable(filter).map(new Function<Log, NodeAddedEventResponse>() {
-//            @Override
-//            public NodeAddedEventResponse apply(Log log) {
-//                RawContract.EventValuesWithLog eventValues = extractEventParametersWithLog(NODEADDED_EVENT, log);
-//                NodeAddedEventResponse typedResponse = new NodeAddedEventResponse();
-//                typedResponse.log = log;
-//                typedResponse.added = (Boolean) eventValues.getNonIndexedValues().get(0).getValue();
-//                typedResponse.enodeId = (String) eventValues.getNonIndexedValues().get(1).getValue();
-//                typedResponse.enodeHost = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//                typedResponse.enodePort = (BigInteger) eventValues.getNonIndexedValues().get(3).getValue();
-//                return typedResponse;
-//            }
-//        });
-//    }
-//
-//    public Flowable<NodeAddedEventResponse> nodeAddedEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-//        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-//        filter.addSingleTopic(EventEncoder.encode(NODEADDED_EVENT));
-//        return nodeAddedEventFlowable(filter);
-//    }
-//
-//    public List<NodeRemovedEventResponse> getNodeRemovedEvents(TransactionReceipt transactionReceipt) {
-//        List<RawContract.EventValuesWithLog> valueList = extractEventParametersWithLog(NODEREMOVED_EVENT, transactionReceipt);
-//        ArrayList<NodeRemovedEventResponse> responses = new ArrayList<NodeRemovedEventResponse>(valueList.size());
-//        for (RawContract.EventValuesWithLog eventValues : valueList) {
-//            NodeRemovedEventResponse typedResponse = new NodeRemovedEventResponse();
-//            typedResponse.log = eventValues.getLog();
-//            typedResponse.removed = (Boolean) eventValues.getNonIndexedValues().get(0).getValue();
-//            typedResponse.enodeId = (String) eventValues.getNonIndexedValues().get(1).getValue();
-//            typedResponse.enodeHost = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//            typedResponse.enodePort = (BigInteger) eventValues.getNonIndexedValues().get(3).getValue();
-//            responses.add(typedResponse);
-//        }
-//        return responses;
-//    }
-//
-//    public Flowable<NodeRemovedEventResponse> nodeRemovedEventFlowable(EthFilter filter) {
-//        return web3j.ethLogFlowable(filter).map(new Function<Log, NodeRemovedEventResponse>() {
-//            @Override
-//            public NodeRemovedEventResponse apply(Log log) {
-//                RawContract.EventValuesWithLog eventValues = extractEventParametersWithLog(NODEREMOVED_EVENT, log);
-//                NodeRemovedEventResponse typedResponse = new NodeRemovedEventResponse();
-//                typedResponse.log = log;
-//                typedResponse.removed = (Boolean) eventValues.getNonIndexedValues().get(0).getValue();
-//                typedResponse.enodeId = (String) eventValues.getNonIndexedValues().get(1).getValue();
-//                typedResponse.enodeHost = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//                typedResponse.enodePort = (BigInteger) eventValues.getNonIndexedValues().get(3).getValue();
-//                return typedResponse;
-//            }
-//        });
-//    }
-//
-//    public Flowable<NodeRemovedEventResponse> nodeRemovedEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-//        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-//        filter.addSingleTopic(EventEncoder.encode(NODEREMOVED_EVENT));
-//        return nodeRemovedEventFlowable(filter);
-//    }
-//
-//    public List<ProposalAddedEventResponse> getProposalAddedEvents(TransactionReceipt transactionReceipt) {
-//        List<RawContract.EventValuesWithLog> valueList = extractEventParametersWithLog(PROPOSALADDED_EVENT, transactionReceipt);
-//        ArrayList<ProposalAddedEventResponse> responses = new ArrayList<ProposalAddedEventResponse>(valueList.size());
-//        for (RawContract.EventValuesWithLog eventValues : valueList) {
-//            ProposalAddedEventResponse typedResponse = new ProposalAddedEventResponse();
-//            typedResponse.log = eventValues.getLog();
-//            typedResponse.key = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
-//            typedResponse.status = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-//            typedResponse.sender = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//            responses.add(typedResponse);
-//        }
-//        return responses;
-//    }
-//
-//    public Flowable<ProposalAddedEventResponse> proposalAddedEventFlowable(EthFilter filter) {
-//        return web3j.ethLogFlowable(filter).map(new Function<Log, ProposalAddedEventResponse>() {
-//            @Override
-//            public ProposalAddedEventResponse apply(Log log) {
-//                RawContract.EventValuesWithLog eventValues = extractEventParametersWithLog(PROPOSALADDED_EVENT, log);
-//                ProposalAddedEventResponse typedResponse = new ProposalAddedEventResponse();
-//                typedResponse.log = log;
-//                typedResponse.key = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
-//                typedResponse.status = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-//                typedResponse.sender = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//                return typedResponse;
-//            }
-//        });
-//    }
-//
-//    public Flowable<ProposalAddedEventResponse> proposalAddedEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-//        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-//        filter.addSingleTopic(EventEncoder.encode(PROPOSALADDED_EVENT));
-//        return proposalAddedEventFlowable(filter);
-//    }
-//
-//    public List<ProposalRemovedEventResponse> getProposalRemovedEvents(TransactionReceipt transactionReceipt) {
-//        List<RawContract.EventValuesWithLog> valueList = extractEventParametersWithLog(PROPOSALREMOVED_EVENT, transactionReceipt);
-//        ArrayList<ProposalRemovedEventResponse> responses = new ArrayList<ProposalRemovedEventResponse>(valueList.size());
-//        for (RawContract.EventValuesWithLog eventValues : valueList) {
-//            ProposalRemovedEventResponse typedResponse = new ProposalRemovedEventResponse();
-//            typedResponse.log = eventValues.getLog();
-//            typedResponse.key = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
-//            typedResponse.status = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-//            typedResponse.sender = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//            responses.add(typedResponse);
-//        }
-//        return responses;
-//    }
-//
-//    public Flowable<ProposalRemovedEventResponse> proposalRemovedEventFlowable(EthFilter filter) {
-//        return web3j.ethLogFlowable(filter).map(new Function<Log, ProposalRemovedEventResponse>() {
-//            @Override
-//            public ProposalRemovedEventResponse apply(Log log) {
-//                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(PROPOSALREMOVED_EVENT, log);
-//                ProposalRemovedEventResponse typedResponse = new ProposalRemovedEventResponse();
-//                typedResponse.log = log;
-//                typedResponse.key = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
-//                typedResponse.status = (BigInteger) eventValues.getNonIndexedValues().get(1).getValue();
-//                typedResponse.sender = (String) eventValues.getNonIndexedValues().get(2).getValue();
-//                return typedResponse;
-//            }
-//        });
-//    }
-//
-//    public Flowable<ProposalRemovedEventResponse> proposalRemovedEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-//        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-//        filter.addSingleTopic(EventEncoder.encode(PROPOSALREMOVED_EVENT));
-//        return proposalRemovedEventFlowable(filter);
-//    }
-//
-
-
-//    public RemoteFunctionCall<TransactionReceipt> add(String enodeId, String enodeHost, BigInteger enodePort) {
-//        final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
-//                FUNC_ADD,
-//                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(enodeId),
-//                        new org.web3j.abi.datatypes.Utf8String(enodeHost),
-//                        new org.web3j.abi.datatypes.generated.Uint16(enodePort)),
-//                Collections.<TypeReference<?>>emptyList());
-//        return executeRemoteCallTransaction(function);
-//    }
 
     /** Метод возвращает RawTransaction, которую необходимо подписать отправителю, указанному как senderAddress.
      * Транзакция позволит проголосовать за добавление ноды в белый список

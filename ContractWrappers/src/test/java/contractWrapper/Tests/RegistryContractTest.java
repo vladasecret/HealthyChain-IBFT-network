@@ -1,6 +1,7 @@
 package contractWrapper.Tests;
 
 import contractWrapper.util.Options;
+import healthyLife.contractWrappers.base.RawContract;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +16,7 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.exceptions.ContractCallException;
 
 import healthyLife.contractWrappers.RegistryContract;
+import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,17 +40,22 @@ public class RegistryContractTest {
         web3j = Web3j.build(new HttpService(Options.URL));
         account = new Account(privateKey, web3j);
 
-        RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(account.getAddress(), web3j);
-        registryContract = RegistryContract.deploy(account.signTransaction(createContractTransaction), web3j).send();
+        String registryContractAddress = healthyLife.contractWrappers.generated.RegistryContract
+                .deploy(web3j,
+                        account.credentials,
+                        new StaticGasProvider(RawContract.GAS_PRICE, RawContract.GAS_LIMIT))
+                .send()
+                .getContractAddress();
+        registryContract = RegistryContract.load(registryContractAddress, account.getAddress(), web3j);
         //registryContract = RegistryContract.load("0x0000000000000000000000000000000000007777", account.getAddress(), web3j);
     }
 
-    @Test
-    public void deployTest() throws Exception {
-        RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(account.getAddress(), web3j);
-        RegistryContract registryContract = RegistryContract.deploy(account.signTransaction(createContractTransaction), web3j).send();
-        Assertions.assertNotEquals(Address.DEFAULT.toString(), registryContract.getContractAddress());
-    }
+//    @Test
+//    public void deployTest() throws Exception {
+//        RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(account.getAddress(), web3j);
+//        RegistryContract registryContract = RegistryContract.deploy(account.signTransaction(createContractTransaction), web3j).send();
+//        Assertions.assertNotEquals(Address.DEFAULT.toString(), registryContract.getContractAddress());
+//    }
 
     @Test
     public void loadFailureTest() {

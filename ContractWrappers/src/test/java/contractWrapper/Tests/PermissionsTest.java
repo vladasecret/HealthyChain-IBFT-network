@@ -62,9 +62,15 @@ public class PermissionsTest {
         doctor2 = new Account(doctor2PrivateKey, web3j);
         patient = new Account(patientPrivateKey, web3j);
 
-        RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(provider.getAddress(), web3j);
-        RegistryContract registryContract = RegistryContract.deploy(provider.signTransaction(createContractTransaction), web3j).send();
-        registryContractAddress = registryContract.getContractAddress();
+        registryContractAddress = healthyLife.contractWrappers.generated.RegistryContract
+                .deploy(web3j,
+                        provider.credentials,
+                        new StaticGasProvider(RawContract.GAS_PRICE, RawContract.GAS_LIMIT))
+                .send()
+                .getContractAddress();
+
+        RegistryContract registryContract = RegistryContract.load(registryContractAddress, provider.getAddress(), web3j);
+
         UserContractFactory userContractFactory = UserContractFactory
                 .deploy(web3j,
                         provider.credentials,

@@ -49,8 +49,10 @@ public class AccountControllerTest {
 
         admin = new Account(adminPrivateKey, web3j);
 
-        RawTransaction createContractTransaction = RegistryContract.createContractRawTransaction(admin.getAddress(), web3j);
-        registryContract = RegistryContract.deploy(admin.signTransaction(createContractTransaction), web3j).send();
+        healthyLife.contractWrappers.generated.RegistryContract regGen = healthyLife.contractWrappers.generated.RegistryContract
+                .deploy(web3j, admin.credentials, new StaticGasProvider(RawContract.GAS_PRICE, RawContract.GAS_LIMIT)).send();
+
+        registryContract = RegistryContract.load(regGen.getContractAddress(), admin.getAddress(), web3j);
 
         UserContractFactory userContractFactory = UserContractFactory
                 .deploy(web3j, admin.credentials, new StaticGasProvider(RawContract.GAS_PRICE, RawContract.GAS_LIMIT),

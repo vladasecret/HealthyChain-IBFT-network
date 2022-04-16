@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 public class RegistryContract extends RawContract implements RegistryContractApi {
-    public static String BINARY = healthyLife.contractWrappers.generated.RegistryContract.BINARY;
 
     public static final String FUNC_ACCOUNT_CONTROLLER_CONTRACT = "ACCOUNT_CONTROLLER_CONTRACT";
 
@@ -52,31 +51,31 @@ public class RegistryContract extends RawContract implements RegistryContractApi
 
 
     protected RegistryContract(String contractAddress, String senderAddress, Web3j web3j){
-        super(BINARY, contractAddress, senderAddress,  web3j);
+        super(contractAddress, senderAddress,  web3j);
     }
 
-    public static RawTransaction createContractRawTransaction(String fromAddress, Web3j web3j)  {
-        return RawTransaction
-                .createContractTransaction(getNonce(fromAddress, web3j), GAS_PRICE, GAS_LIMIT, BigInteger.ZERO, BINARY);
-    }
-
-    /**
-     * Метод возвращает объект RemoteCall, вызов которого развернет новый контракт в сети, установленной параметром web3j,
-     * и в случае успеха вернет новый объект RegistryContract
-     *  <p>
-     * Параметр hexTransaction должен быть подписанной RawTransaction, полученной в методе createContractRawTransaction.
-     * При вызове RemoteCall происходит проверка полей транзакции, в случае их несоответствия (попытки подмены кода)
-     * вызов RemoteCall завершится с ошибкой TransactionException
-     *
-     * @param hexTransaction подписанная RawTransaction полученная в методе createContractRawTransaction
-     * @param web3j
-     * @return RemoteCall, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
-     *
-     * @see RegistryContract#createContractRawTransaction(String, Web3j)
-     */
-    public static RemoteCall<RegistryContract> deploy(String hexTransaction, Web3j web3j) {
-        return deployRemoteCall(RegistryContract.class, BINARY, hexTransaction, web3j);
-    }
+//    public static RawTransaction createContractRawTransaction(String fromAddress, Web3j web3j)  {
+//        return RawTransaction
+//                .createContractTransaction(getNonce(fromAddress, web3j), GAS_PRICE, GAS_LIMIT, BigInteger.ZERO, BINARY);
+//    }
+//
+//    /**
+//     * Метод возвращает объект RemoteCall, вызов которого развернет новый контракт в сети, установленной параметром web3j,
+//     * и в случае успеха вернет новый объект RegistryContract
+//     *  <p>
+//     * Параметр hexTransaction должен быть подписанной RawTransaction, полученной в методе createContractRawTransaction.
+//     * При вызове RemoteCall происходит проверка полей транзакции, в случае их несоответствия (попытки подмены кода)
+//     * вызов RemoteCall завершится с ошибкой TransactionException
+//     *
+//     * @param hexTransaction подписанная RawTransaction полученная в методе createContractRawTransaction
+//     * @param web3j
+//     * @return RemoteCall, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
+//     *
+//     * @see RegistryContract#createContractRawTransaction(String, Web3j)
+//     */
+//    public static RemoteCall<RegistryContract> deploy(String hexTransaction, Web3j web3j) {
+//        return deployRemoteCall(RegistryContract.class, BINARY, hexTransaction, web3j);
+//    }
 
     /**
      * Метод создает обертку для контракта, размещенного по указанному адресу.
