@@ -4,9 +4,11 @@ import healthyLife.contractWrappers.RegistryContract;
 import healthyLife.contractWrappers.base.RawContract;
 import healthyLife.contractWrappers.generated.AccountController;
 import healthyLife.contractWrappers.generated.UserContractFactory;
-import healthyLife.serverApi.wrappers.RegistryContractApi;
+import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class ContractsExplorer {
     // Но это не ок, в нормальной сети его нужно спрятать
     private final static String adminPrivateKey = "906d026a8167363a73818dd2332c71e71a63c7aa22c66589f038634524a69f61";
     private Account account;
-    private healthyLife.contractWrappers.generated.RegistryContract registryContract;
+    private healthyLife.contractWrappers.RegistryContract registryContract;
     Web3j web3j;
 
     public ContractsExplorer(Web3j web3j, String adminPrivateKey) throws IOException {
@@ -27,7 +29,7 @@ public class ContractsExplorer {
         }
         account = new Account(adminPrivateKey, web3j);
 
-        RegistryContractApi registryContract = RegistryContract.load(REGISTRY_ADDRESS, account.getAddress(), web3j);
+        registryContract = RegistryContract.load(REGISTRY_ADDRESS, account.getAddress(), web3j);
     }
 
     public ContractsExplorer(Web3j web3j) throws IOException {
@@ -55,6 +57,13 @@ public class ContractsExplorer {
                 REGISTRY_ADDRESS,
                 userContractFactory.getContractAddress())
                 .send();
-        registryContract.setContractAddress(registryContract.ACCOUNT_CONTROLLER_CONTRACT().send(), accountController.getContractAddress());
+        RawTransaction setRawTx = registryContract
+                .setContractAddressRawTransaction(registryContract.ACCOUNT_CONTROLLER_CONTRACT().send(),
+                        accountController.getContractAddress());
+        TransactionReceipt res = registryContract.executeSetContractAddress(account.signTransaction(setRawTx))
+                .send();
+        if (!res.isStatusOK()){
+            throw new TransactionException("Transaction failure", res);
+        }
     }
 }
