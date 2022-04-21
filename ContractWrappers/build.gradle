@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id "org.web3j" version "4.9.0"
+}
+
+web3j {
+    generatedPackageName = "org.web3j.contractWrapper.generated"
+    includedContracts = ['RegistryContract', 'AccountController', 'UserContractFactory','Admin', 'AccountIngress', 'NodeIngress', 'NodeController', 'UserContract', 'PatientContract', 'DoctorContract']
+    //includedContracts = []
+}
+
+solidity{
+    executable = "C:\\Users\\vlada\\.web3j\\solc\\solc\\v0.8.12\\solc-windows.exe"
+    version = '0.8.12'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile 'commons-io:commons-io:2.11.0'
+    implementation "org.web3j:core:4.5.11"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testCompile "org.web3j:web3j-unit:4.5.11"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
+}
