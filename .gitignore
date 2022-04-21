@@ -1,0 +1,4 @@
+**/data/caches
+**/data/database
+**/data/besu.*
+script.sh
