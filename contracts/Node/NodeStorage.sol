@@ -1,26 +1,22 @@
 pragma solidity ^0.8.11;
 
 import "./INodeStorage.sol";
-import "./NodeIngress.sol";
 //import "../contracts/EnodeLib.sol";
 
 
 contract NodeStorage is INodeStorage {
-    //using EnodeLib for Enode;
      
     address owner;
-    //NodeIngress nodeIngressContract;
 
     constructor(){
         owner = msg.sender;
-        //nodeIngressContract = _nodeIngressContract;
     }
     
     Enode[] public allowlist; // 1 based array
-
     mapping(uint256 => uint256) indexOf; // 0 means don't exist
 
     bool public IdOnlyMode = true;    
+    mapping(string => uint256) enodeIdNum;
 
     modifier onlyOwner() {
         require(owner == msg.sender, "The sender must be the owner of the contract");
@@ -37,6 +33,10 @@ contract NodeStorage is INodeStorage {
         return (item.enodeId, item.enodeHost, item.enodePort);
     }
 
+    function getEnodeIdNum(string calldata enodeId) external view returns(uint256){
+        return enodeIdNum[enodeId];
+    }
+
     function add(string memory enodeId, string memory enodeHost, uint16 enodePort) onlyOwner public returns (bool){
         //uint256 key = EnodeLib.calculateKey(enodeId, enodeHost, enodePort, IdOnlyMode);               
         uint256 key = calculateKey(enodeId, enodeHost, enodePort);               
@@ -46,6 +46,8 @@ contract NodeStorage is INodeStorage {
 
         allowlist.push(Enode(enodeId,enodeHost, enodePort));
         indexOf[key] = allowlist.length;
+        enodeIdNum[enodeId] += 1;
+        
         return true;
     }
 
@@ -61,11 +63,14 @@ contract NodeStorage is INodeStorage {
         if (index != allowlist.length){
             Enode memory enode = allowlist[allowlist.length - 1];
             allowlist[index - 1] = enode;
-            indexOf[calculateKey(enode)] = index;
+            uint256 lastKey = calculateKey(enode);
+            if (indexOf[lastKey] != 0)
+                indexOf[lastKey] = index;
         }
 
         indexOf[key] = 0;       
         allowlist.pop();
+        enodeIdNum[enodeId] -= 1;
         return true;
     }
     
@@ -76,15 +81,19 @@ contract NodeStorage is INodeStorage {
         for (uint i = 0; i < allowlist.length; i++){
             Enode memory enode = allowlist[i];
             indexOf[calculateKey(enode)] = 0;
+            enodeIdNum[enode.enodeId] = 0;
         }
 
         IdOnlyMode = value;
 
         for (uint i = 0; i < allowlist.length; i++){
             Enode memory enode = allowlist[i];
-            indexOf[calculateKey(enode)] = i + 1;
+            uint256 key = calculateKey(enode);
+            if (indexOf[key] == 0){
+                enodeIdNum[enode.enodeId] += 1;
+            }
+            indexOf[key] = i + 1;
         }
-
         return true;
     }
 

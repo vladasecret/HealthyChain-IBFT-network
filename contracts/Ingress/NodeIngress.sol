@@ -1,10 +1,10 @@
 pragma solidity ^0.8.12;
 
-import "./INodeProxy.sol";
+import "../Node/INodeProxy.sol";
 
 contract NodeIngress{
 
-    address private nodesProxyAddress;
+    address nodesProxyAddress;
     //address private adminsContract;
     address creator;
 
@@ -32,7 +32,7 @@ contract NodeIngress{
     ) external view returns (bool){
         if (nodesProxyAddress != address(0))
             return INodeProxy(nodesProxyAddress).connectionAllowed(enodeId, enodeHost, enodePort);
-        return false;
+        return true;
     }
 
 
