@@ -37,20 +37,19 @@ contract AccountStorage is IAccountStorage{
         return false;
     }
 
-    function remove(address account) public onlyOwner returns (bool) {
+    function remove(address account) public onlyOwner {
         uint256 index = indexOf[account];
         if (index > 0 && index <= allowlist.length) { //1-based indexing
-            
-            if (index != allowlist.length) {
-                AccountInfo memory lastAccount = allowlist[allowlist.length - 1];
-                allowlist[index - 1] = lastAccount;
-                indexOf[lastAccount.accountAddress] = index;
-            }
-            allowlist.pop();
-            indexOf[account] = 0;
-            return true;
+            allowlist[allowlist.length - 1].class = UserClass.DELETED;
+//            if (index != allowlist.length) {
+//                AccountInfo memory lastAccount = allowlist[allowlist.length - 1];
+//                allowlist[index - 1] = lastAccount;
+//                indexOf[lastAccount.accountAddress] = index;
+//            }
+//            allowlist.pop();
+//            indexOf[account] = 0;
+//            return true;
         }
-        return false;
     }
 
     function getUserClass(address user) public view  returns(UserClass){
