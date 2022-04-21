@@ -57,6 +57,14 @@ services:
     networks:
       ibft-network:
         ipv4_address: 172.16.239.14
+
+
+  block-explorer:
+    image: alethio/ethereum-lite-explorer
+    environment:
+      - APP_NODE_URL=http://localhost:8545
+    ports:
+      - 8080:80
     
 networks:
   ibft-network:
@@ -65,6 +73,7 @@ networks:
     ipam:
       config:
         - subnet: 172.16.239.0/24
+
 
 
     
