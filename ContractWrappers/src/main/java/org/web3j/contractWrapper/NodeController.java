@@ -1,17 +1,11 @@
 package org.web3j.contractWrapper;
 
-import io.reactivex.Flowable;
-import io.reactivex.functions.Function;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.w3c.dom.Node;
-import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
@@ -22,21 +16,15 @@ import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint16;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
-import org.web3j.crypto.Credentials;
+import org.web3j.contractWrapper.Base.RawContract;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.RemoteCall;
 import org.web3j.protocol.core.RemoteFunctionCall;
-import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.BaseEventResponse;
-import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.exceptions.TransactionException;
-import org.web3j.tx.Contract;
-import org.web3j.tx.TransactionManager;
 import org.web3j.tx.exceptions.ContractCallException;
-import org.web3j.tx.gas.ContractGasProvider;
 
 public class NodeController extends RawContract {
     public static final String BINARY = org.web3j.contractWrapper.generated.NodeController.BINARY;
@@ -281,7 +269,7 @@ public class NodeController extends RawContract {
      * Если нода уже зарегистрирована или отправитель уже проголосовал за ее добавление, то ничего не произойдет
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет
      * @param hexTransaction
-     * @return RemoteCall<TransactionReceipt>
+     * @return RemoteCall, вызов которого вернет TransactionReceipt
      * @throws TransactionException
      * @see NodeController#addRawTransaction(String, String, BigInteger)
      */
@@ -300,7 +288,7 @@ public class NodeController extends RawContract {
      * @param enodeId публичный ключ регистрируемой ноды
      * @param enodeHost ip-адрес ноды
      * @param enodePort порт ноды
-     * @return RemoteFunctionCall<Boolean> - после вызова возвращает результат
+     * @return RemoteFunctionCall - после вызова возвращает результат Boolean
      */
     public RemoteFunctionCall<Boolean> connectionAllowed(String enodeId, String enodeHost, BigInteger enodePort) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_CONNECTIONALLOWED,
@@ -313,18 +301,20 @@ public class NodeController extends RawContract {
 
     /**
      * Метод возращает голос отправителя относительно указанной ноды
+     *
      * @param enodeId публичный ключ регистрируемой ноды
      * @param enodeHost ip-адрес ноды
      * @param enodePort порт ноды
-     * @return RemoteFunctionCall<ProposalStatus> после вызова возвращает результат
+     * @return RemoteFunctionCall после вызова возвращает результат BigInteger, который можно преобразовать в ProposalStatus
+     * @see ProposalStatus
      */
-    public RemoteFunctionCall<ProposalStatus> getSenderProposal(String enodeId, String enodeHost, BigInteger enodePort) {
+    public RemoteFunctionCall<BigInteger> getSenderProposal(String enodeId, String enodeHost, BigInteger enodePort) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETSENDERPROPOSAL,
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(enodeId),
                         new org.web3j.abi.datatypes.Utf8String(enodeHost),
                         new org.web3j.abi.datatypes.generated.Uint16(enodePort)),
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {}));
-        return executeRemoteCallSingleValueReturn(function, ProposalStatus.class);
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     /**
@@ -332,7 +322,7 @@ public class NodeController extends RawContract {
      * @param enodeId публичный ключ регистрируемой ноды
      * @param enodeHost ip-адрес ноды
      * @param enodePort порт ноды
-     * @return RemoteFunctionCall<List> после вызова возвращает результат
+     * @return RemoteFunctionCall после вызова возвращает результат List
      */
     public RemoteFunctionCall<List> getVoters(String enodeId, String enodeHost, BigInteger enodePort) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETVOTERS,
@@ -378,7 +368,7 @@ public class NodeController extends RawContract {
      * Если нода не зарегистрирована или отправитель уже проголосовал за ее удаление, то ничего не произойдет
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет
      * @param hexTransaction
-     * @return RemoteCall<TransactionReceipt>
+     * @return RemoteCall после вызова возвращает TransactionReceipt
      * @throws TransactionException
      * @see NodeController#removeRawTransaction(String, String, BigInteger)
      */
@@ -419,7 +409,7 @@ public class NodeController extends RawContract {
      * Если отправитель не голосовал за указанную ноду, то ничего не произойдет
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет
      * @param hexTransaction
-     * @return RemoteCall<TransactionReceipt>
+     * @return RemoteCall после вызова возвращает TransactionReceipt
      * @throws TransactionException
      * @see NodeController#revokeProposalRawTransaction(String, String, BigInteger)
      */
@@ -455,7 +445,7 @@ public class NodeController extends RawContract {
      * Транзакция позволит установить настройку использования только публичного адреса узла (по умолчанию true)
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет
      * @param hexTransaction
-     * @return RemoteCall<TransactionReceipt>
+     * @return RemoteCall после вызова возвращает TransactionReceipt
      * @throws TransactionException
      * @see NodeController#setIdOnlyModeRawTransaction(Boolean)
      */

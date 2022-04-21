@@ -9,19 +9,14 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.contractWrapper.RawContract;
-import org.web3j.crypto.Credentials;
+import org.web3j.contractWrapper.Base.RawContract;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteCall;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.exceptions.TransactionException;
-import org.web3j.tx.Contract;
-import org.web3j.tx.TransactionManager;
 import org.web3j.tx.exceptions.ContractCallException;
-import org.web3j.tx.gas.ContractGasProvider;
-
 
 
 public class AccountController extends RawContract {
@@ -71,7 +66,7 @@ public class AccountController extends RawContract {
      * Он делает проверку, что по указанному адресу хранится какой-либо код
      * @param contractAddress адрес загружаемого контракта
      * @param senderAddress адрес отправителя, который будет подставляться при вызове eth_call (чтение данных из блокчейна)
-     * @param web3j
+     * @param web3j Web3j instance
      * @return AccountController
      */
     public static AccountController load(String contractAddress, String senderAddress,  Web3j web3j){
@@ -98,9 +93,9 @@ public class AccountController extends RawContract {
      * вызов RemoteCall завершится с ошибкой TransactionException
      *
      * @param hexTransaction подписанная RawTransaction полученная в методе createContractRawTransaction
-     * @param web3j
-     * @return RemoteCall<RegistryContract>, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
-     *
+     * @param web3j Web3j instance
+     * @return RemoteCall, вызов которого развернет новый RegistryContract в сети и вернет новый объект RegistryContract
+
      * @see AccountController#createContractRawTransaction(String, Web3j, String, String)
      */
     public static RemoteCall<AccountController> deploy(String hexTransaction, Web3j web3j) {
@@ -108,12 +103,12 @@ public class AccountController extends RawContract {
     }
 
     /**
-     * Метод возвращает RemoteFunctionCall<String>, вызов которого вернет адрес контракта UserContract.
+     * Метод возвращает RemoteFunctionCall, вызов которого вернет адрес контракта UserContract.
      * В случае если указанный в параметрах аккаунт является пациентом, по полученному адресу можно загрузить PatientContract
      * В случае если указанный в параметрах аккаунт является врачом, по полученному адресу можно загрузить DoctorContract
      * если аккаунт не зарегистрирован, то будет вызвана ошибка TransactionException
      * @param account Ethereum адрес пользователя, который зарегистрирован в системе
-     * @return RemoteFunctionCall<String> String - адрес контракта UserContract
+     * @return RemoteFunctionCall, который вернет String - адрес контракта UserContract
      */
     public RemoteFunctionCall<String> getUserContractAddress(String account) {
         final Function function = new Function(FUNC_GETUSERCONTRACTADDRESS,
@@ -124,9 +119,9 @@ public class AccountController extends RawContract {
 
 
     /**
-     * Метод возвращает RemoteFunctionCall<Boolean>, вызов которого возвращает результат проверки, зарегистрирован ли указанный аккаунт в системе
-     * @param account
-     * @return RemoteFunctionCall<Boolean>
+     * Метод возвращает RemoteFunctionCall, вызов которого возвращает результат проверки, зарегистрирован ли указанный аккаунт в системе
+     * @param account Ethereum address
+     * @return RemoteFunctionCall, вызов которого вернет результат Boolean
      */
     public RemoteFunctionCall<Boolean> isRegistered(String account) {
         final Function function = new Function(FUNC_ISREGISTERED,
@@ -159,9 +154,8 @@ public class AccountController extends RawContract {
      * метод завершится с ошибкой TransactionException.
      * Если аккаунт уже зарегистрирован, то при обработке транзакции будет вызвана ошибка TransactionException
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет
-     * @param hexTransaction
-     * @return RemoteCall<TransactionReceipt>
-     * @throws TransactionException
+     * @param hexTransaction подписанная RawTransaction
+     * @return RemoteCall, вызов которого вернет TransactionReceipt
      * @see AccountController#registryDoctorRawTransaction(String)
      */
     public RemoteCall<TransactionReceipt> executeRegistryDoctor(String hexTransaction) throws TransactionException {
@@ -196,8 +190,6 @@ public class AccountController extends RawContract {
      * Если аккаунт уже зарегистрирован, то при обработке транзакции будет вызвана ошибка TransactionException
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет/
      * @param hexTransaction подписанная RawTransaction
-     * @return RemoteCall<TransactionReceipt>
-     * @throws TransactionException
      * @see AccountController#registryPatientRawTransaction(String)
      */
     public RemoteCall<TransactionReceipt> executeRegistryPatient(String hexTransaction) throws TransactionException {
@@ -218,12 +210,16 @@ public class AccountController extends RawContract {
 //    }
 
     /**
+     *
      * Метод возвращает RawTransaction, которую необходимо подписать отправителю.
+     * <p>
      * Транзакция позволит зарегистрировать пользователя с адресом account в системе как провайдера.
      * Регистрируемый адрес account должен являться администратором.
+     *
      * Если аккаунт уже зарегистрирован и не является администратором, то при обработке транзакции будет вызвана ошибка TransactionException
+     * <p>
      * Адрес senderAddress должен подписать транзакцию и должен являться администратором
-     * @param account
+     * @param account регистрируемый аккаунт
      * @return RawTransaction, которую должен подписать senderAddress
      * @see AccountController#executeRegistryProvider(String)
      */
@@ -242,8 +238,7 @@ public class AccountController extends RawContract {
      * Если аккаунт уже зарегистрирован или не является администратором, то при обработке транзакции будет вызвана ошибка TransactionException.
      * Чтобы транзакция выполнилась успешно, подписывающий должен быть администратором. В противном случае транзакция выполнена не будет/
      * @param hexTransaction подписанная RawTransaction
-     * @return RemoteCall<TransactionReceipt>
-     * @throws TransactionException
+     * @return RemoteCall, вызов которого вернет TransactionReceipt
      * @see AccountController#registryProviderRawTransaction(String) 
      */
     public RemoteCall<TransactionReceipt> executeRegistryProvider(String hexTransaction) throws TransactionException {
