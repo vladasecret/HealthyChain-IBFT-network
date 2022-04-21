@@ -8,7 +8,7 @@ import "../RegistryContract.sol";
 import "../User/IUserContractFactory.sol";
 
 /// @notice Contract to manage relationships and add/get metadata and grant access
-contract AccountController is IAccountProxy{
+contract AccountController is IAccountProxy, IAccountController{
     IAccountStorage accountStorage;
     IUserContractFactory userContractFactory;
     RegistryContract registryContract;
