@@ -55,7 +55,6 @@ contract TestAccountStorage is AccountStorage{
     }
 
     function testRemoveItem() public{
-        uint256 size = size();
         bool res = remove(accounts[0]);
         Assert.equal(res, true, "");
         Assert.equal(exists(accounts[0]), false, "");
