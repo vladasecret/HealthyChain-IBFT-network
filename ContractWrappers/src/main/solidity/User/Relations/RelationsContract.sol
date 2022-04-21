@@ -91,8 +91,6 @@ contract RelationsContract{
     //Process requested relation (user confirm)
     function processRequest(address user, bool confirm) public userContractOnly(){
         RelationStatus status = getStatus(user);
-        if (status == RelationStatus.ACTIVE)
-            return;
         require(status == RelationStatus.REQUESTED, "The request cannot be processed because it doesn't exist");
         
         RelationInfo storage relation = relations[indexOf[user] - 1];
@@ -167,13 +165,23 @@ contract RelationsContract{
         return RelationStatus.INACTIVE;
     }
 
-    function getAllRelations() external view returns(bytes[] memory){
-        bytes[] memory res = new bytes[](relations.length);
-        for (uint256 i = 0; i < relations.length; ++i){
-            RelationInfo storage relation = relations[i];
-            res[i] = abi.encodePacked(relation.user, uint256(relation.status));
-        }
-        return res;
+//    function getAllRelations() external view returns(bytes[] memory){
+//        bytes[] memory res = new bytes[](relations.length);
+//        for (uint256 i = 0; i < relations.length; ++i){
+//            RelationInfo storage relation = relations[i];
+//            res[i] = abi.encodePacked(relation.user, uint256(relation.status));
+//        }
+//        return res;
+//    }
+
+    function getAllRelations() external view returns(RelationInfo[] memory){
+        return relations;
+//        bytes[] memory res = new bytes[](relations.length);
+//        for (uint256 i = 0; i < relations.length; ++i){
+//            RelationInfo storage relation = relations[i];
+//            res[i] = abi.encodePacked(relation.user, uint256(relation.status));
+//        }
+//        return res;
     }
 
     function addRelationItem(address user, RelationStatus status, RelationsContract relationContract) internal {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import healthyLife.serverApi.models.relation.RelationInfoModel;
 import healthyLife.serverApi.wrappers.user.UserContractApi;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
@@ -30,7 +31,7 @@ public class UserContract extends RawContract implements UserContractApi {
 
     public static final String FUNC_ADDPERMISSION = "addPermission";
 
-    public static final String FUNC_ADDPERMISSIONINTERNAL = "addPermissionInternal";
+    public static final String FUNC_GETRELATIONSTATUS = "getRelationStatus";
 
     public static final String FUNC_CONFIRMRELATION = "confirmRelation";
 
@@ -168,6 +169,14 @@ public class UserContract extends RawContract implements UserContractApi {
     }
 
 
+    public RemoteFunctionCall<BigInteger> getRelationStatus(String user) {
+        final Function function = new Function(FUNC_GETRELATIONSTATUS,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, user)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {}));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+
 //    /**
 //     * Метод выполняет подписанную транзакцию, полученную в методе confirmRelationRawTransaction
 //     * <p>
@@ -257,7 +266,38 @@ public class UserContract extends RawContract implements UserContractApi {
                 });
     }
 
-//    /**
+////    /**
+////     * Метод вернет всю информацию об отношениях, хранящуюся в RelationsContract.
+////     * <p>
+////     * @return Элементом List будет byte[], который будет хранить в себе адрес пользователя, статус отношений.
+////     * byte[] будет получен при помощи abi.encodePacked(user, uint256(relation.status)),
+////     * где user - адрес пользователя, status - статус отношений с этим пользователем
+////     * @see RelationStatus
+////     *
+////     */
+//    public RemoteFunctionCall<List<Tuple2<String, UserContractApi.RelationStatus>>> getAllRelations() {
+//        final Function function = new Function(FUNC_GETALLRELATIONS,
+//                Arrays.<Type>asList(),
+//                Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<DynamicBytes>>() {}));
+//        return new RemoteFunctionCall<List<Tuple2<String, UserContractApi.RelationStatus>>>(function,
+//                new Callable<List<Tuple2<String, UserContractApi.RelationStatus>>>() {
+//                    @Override
+//                    @SuppressWarnings("unchecked")
+//                    public List call() throws Exception {
+//                        List<Type> result = (List<Type>) executeCallSingleValueReturn(function, List.class);
+//                        return convertToNative(result).stream().map(item -> {
+//                            byte[] byteArr = (byte[])item;
+//                            String address = Numeric.toHexString(byteArr, 0, 20, true);
+//                            UserContractApi.RelationStatus status = UserContractApi.RelationStatus.values()[new BigInteger(byteArr, 20, 32).intValue()];
+//                            return new Tuple2<String, UserContractApi.RelationStatus>(address, status);
+//                        }).collect(Collectors.toList());
+//                    }
+//                });
+//    }
+
+
+
+    //    /**
 //     * Метод вернет всю информацию об отношениях, хранящуюся в RelationsContract.
 //     * <p>
 //     * @return Элементом List будет byte[], который будет хранить в себе адрес пользователя, статус отношений.
@@ -266,17 +306,20 @@ public class UserContract extends RawContract implements UserContractApi {
 //     * @see RelationStatus
 //     *
 //     */
-    public RemoteFunctionCall<List> getAllRelations() {
+    public RemoteFunctionCall<List<RelationInfoModel>> getAllRelations() {
         final Function function = new Function(FUNC_GETALLRELATIONS,
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<DynamicBytes>>() {}));
-        return new RemoteFunctionCall<List>(function,
-                new Callable<List>() {
+                Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<healthyLife.contractWrappers.user.UserContract.RelationInfo>>() {}));
+        return new RemoteFunctionCall<List<RelationInfoModel>>(function,
+                new Callable<List<RelationInfoModel>>() {
                     @Override
                     @SuppressWarnings("unchecked")
                     public List call() throws Exception {
                         List<Type> result = (List<Type>) executeCallSingleValueReturn(function, List.class);
-                        return convertToNative(result);
+                        return convertToNative(result).stream().map(item -> {
+                            RelationInfo rel = (RelationInfo)item;
+                            return new RelationInfoModel(rel.user, rel.status);
+                        }).collect(Collectors.toList());
                     }
                 });
     }
@@ -497,6 +540,30 @@ public class UserContract extends RawContract implements UserContractApi {
         return executeRemoteCallSignedTransaction(hexTransaction, function);
     }
 
-    public enum PermissionLevel{READ, SHARE, OWNER}
-    enum RelationStatus{INACTIVE, ACTIVE, REQUESTED, INITIALED}
+//    public enum PermissionLevel{READ, SHARE, OWNER}
+//    enum RelationStatus{INACTIVE, ACTIVE, REQUESTED, INITIALED}
+
+    public static class RelationInfo extends StaticStruct {
+        public String user;
+
+        public BigInteger status;
+
+        public String relationsContract;
+
+        public RelationInfo(String user, BigInteger status, String relationsContract) {
+            super(new org.web3j.abi.datatypes.Address(160, user),
+                    new org.web3j.abi.datatypes.generated.Uint8(status),
+                    new org.web3j.abi.datatypes.Address(160, relationsContract));
+            this.user = user;
+            this.status = status;
+            this.relationsContract = relationsContract;
+        }
+
+        public RelationInfo(Address user, Uint8 status, Address relationsContract) {
+            super(user, status, relationsContract);
+            this.user = user.getValue();
+            this.status = status.getValue();
+            this.relationsContract = relationsContract.getValue();
+        }
+    }
 }
