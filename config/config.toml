@@ -6,7 +6,7 @@ rpc-http-enabled=true
 rpc-http-api=["ETH", "NET", "IBFT"]
 rpc-http-cors-origins=["*"]
 rpc-http-port=8545
-rpc-http-host="0.0.0.0"
+rpc-http-host="127.0.0.1"
 
 p2p-port=30303
 nat-method="DOCKER"
