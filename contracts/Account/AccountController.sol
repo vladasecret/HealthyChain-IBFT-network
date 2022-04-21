@@ -4,6 +4,9 @@ import "./AccountStorage.sol";
 import "./IAccountStorage.sol";
 import "./IAccountProxy.sol";
 import "../RegistryContract.sol";
+import "../User/UserContract.sol";
+import "../User/PatientContract.sol";
+import "../User/DoctorContract.sol";
 
 contract AccountController is IAccountProxy{
     IAccountStorage accountStorage;
@@ -77,11 +80,31 @@ contract AccountController is IAccountProxy{
         
     }
 
-    function registryProvider(address account) external {
+    function registryProvider(address account) onlyAdmin external {
         require(isUser(account), "Registered user address cannot have a code");
         require(!isRegistered(account), "This user is already registered");
-        require(registryContract.isAdmin(account), "To register an address as a provider, it must be an administrator");      
+        require(registryContract.isAdmin(account), "To register an address as a provider, it must be an administrator");  
+        address userContractAddress = address(new UserContract(account, registryContract));
+        accountStorage.add(account, UserClass.PROVIDER, userContractAddress);
     }
+
+    function registryDoctor(address account) onlyAdmin external {
+        require(isUser(account), "Registered user address cannot have a code");
+        require(!isRegistered(account), "This user is already registered");
+
+        address userContractAddress = address(new DoctorContract(account, registryContract));
+        accountStorage.add(account, UserClass.DOCTOR, userContractAddress);
+
+    }
+
+    function registryPatient(address account) external {
+        require(isUser(account), "Registered user address cannot have a code");
+        require(!isRegistered(account), "This user is already registered");
+
+        address userContractAddress = address(new PatientContract(account, registryContract));
+        accountStorage.add(account, UserClass.PATIENT, userContractAddress);
+    }
+
 
     
 
