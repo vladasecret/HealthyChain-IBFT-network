@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.12;
 
+pragma experimental ABIEncoderV2;
+
 //import "./UserContract.sol";
 
 contract PermissionsContract{
@@ -8,78 +10,97 @@ contract PermissionsContract{
     enum PermissionLevel{READ, SHARE, OWNER}
 
     struct RecordMetadata{
-        address user;
-        PermissionLevel level;
-        bytes smk;
-        bytes encodedHash;
-        address giver;
+        bytes32 smk;
+        bytes32 encodedHash;
     }
 
-    event addedPermission(address user, PermissionLevel permissionLevel, address giver);
-    event removedPermission(address user, PermissionLevel permissionLevel, address giver);
+    struct PermissionInfo {
+        address user;
+        PermissionLevel level;
+        RecordMetadata metadata;
+        address permitter;
+    }
+
+    struct UserPermission{
+        address user;
+        PermissionLevel level;
+    }
+
+    event addedPermission(address user, PermissionLevel permissionLevel, address permitter);
+    event removedPermission(address user, PermissionLevel permissionLevel, address permitter);
+
     address parentContractAddress;
     address public dataOwner;
 
-    RecordMetadata[] persmissions;
+    PermissionInfo[] persmissions;
     mapping (address => uint256) indexOf;
 
-    modifier parentOnly() {
-        require(msg.sender == parentContractAddress, "the sender can only be the parent UserContract");
-        _;
-    }
 
     modifier ownerOnly(){
         require(exists(tx.origin) && persmissions[indexOf[tx.origin] - 1].level == PermissionLevel.OWNER, "The sender of the transaction must be the owner of the data");
         _;
     }
 
-    constructor(address owner, bytes memory smk, bytes memory encodedHash) {
+    constructor(address owner, RecordMetadata memory ownerMetadata) {
         parentContractAddress = msg.sender;
         dataOwner = owner;
-        addPermission(owner, PermissionLevel.OWNER, smk, encodedHash);
+        addPermission(owner, PermissionLevel.OWNER, ownerMetadata);
     }
 
-    function addPermission(address user, PermissionLevel level, bytes memory smk, bytes memory encodedHash) public {
+    function addPermission(address user, PermissionLevel level, RecordMetadata memory metadata) public {
         require(indexOf[user] == 0, "User already has permissions");
-        require(isParentContract(msg.sender) || canAddPermissions(tx.origin, level), "The sender of the transaction cannot manage permissions");
-
-        persmissions.push(RecordMetadata(user, level, smk, encodedHash, tx.origin));
+        require(isParentContract(msg.sender) || canAddPermissions(tx.origin, level), "The sender of the transaction cannot add this permission");
+        address  permitter;
+        if (isParentContract(msg.sender) && level != PermissionLevel.OWNER){
+            permitter = dataOwner;
+        }
+        else permitter = tx.origin;
+        persmissions.push(PermissionInfo(user, level, metadata, permitter));
         indexOf[user] = persmissions.length; 
     }
 
     function editPermission(address user, PermissionLevel newLevel) public ownerOnly {
         require(indexOf[user] != 0, "The user does not have permissions");
         persmissions[indexOf[user] - 1].level = newLevel;
+        persmissions[indexOf[user] - 1].permitter = tx.origin;
     }
 
-    function removePermission(address user) ownerOnly public{
-        require(canShare(tx.origin), "The sender of the transaction cannot manage permissions");
+    function removePermission(address user) public{
+        require(exists(user), "No permissions for specified user");
         require(!isOwner(user), "Unable to remove owner's data");
-        if (exists(user) && (isOwner(tx.origin) || persmissions[indexOf[user] - 1].giver == tx.origin)){
-            uint256 index = indexOf[user];
-            if (index != persmissions.length){
-                RecordMetadata storage lastRecord = persmissions[persmissions.length - 1];
-                indexOf[lastRecord.user] = index;
-                persmissions[index - 1] = lastRecord;                
-            }
-            persmissions.pop();
-            indexOf[user] = 0;
+        require(isOwner(tx.origin) || persmissions[indexOf[user] - 1].permitter == tx.origin,
+                "The sender of the transaction cannot manage this permission");
+        uint256 index = indexOf[user];
+        if (index != persmissions.length){
+            PermissionInfo storage lastRecord = persmissions[persmissions.length - 1];
+            indexOf[lastRecord.user] = index;
+            persmissions[index - 1] = lastRecord;                
         }
+        persmissions.pop();
+        indexOf[user] = 0;
     }
 
-    function getMetadata(address user) external view returns(bytes memory smk, bytes memory encodedHash){
-        require(hasAccess(tx.origin, user), "User does not have permission");
-        return (persmissions[indexOf[user] - 1].smk, persmissions[indexOf[user] - 1].encodedHash);
+    function getRecordMetadata(address user) external view returns(RecordMetadata memory){
+        require(hasAccess(tx.origin, user) || canShare(tx.origin), "User does not have permission");
+        return persmissions[indexOf[user] - 1].metadata;
     }
 
-    function getFullMetadata(address user) external view returns(address recordOwner, PermissionLevel permission, bytes memory smk, bytes memory encodedHash, address giver){
-        require(hasAccess(tx.origin, user), "User does not have permission");
-        RecordMetadata storage record = persmissions[indexOf[user] - 1];
-        return (record.user, record.level, record.smk, record.encodedHash, record.giver);
+    function getPermissionInfo(address user) external view returns(PermissionInfo memory){
+        require(hasAccess(tx.origin, user) || canShare(tx.origin), "User does not have permission");
+        return persmissions[indexOf[user] - 1];
     }
 
-    function getPermissions() external parentOnly view returns(RecordMetadata[] memory){
+    function getPermissions() public view returns(PermissionInfo[] memory){
+        require(canShare(tx.origin), "To get information about permissions, the sender must have access canShare");
         return persmissions;
+    }
+
+    function getPermittedUsers() external view returns(UserPermission[] memory){
+        UserPermission[] memory res =  new UserPermission[](persmissions.length);
+        for (uint256 i = 0; i < res.length; ++i){
+            res[i] = UserPermission(persmissions[i].user, persmissions[i].level);
+        }
+        return res;
     }
 
     function size() external view returns(uint256){
@@ -91,13 +112,16 @@ contract PermissionsContract{
     }
 
     function canAddPermissions(address sender, PermissionLevel level) internal view returns(bool){
-        uint256 index = indexOf[sender];
-        if (index == 0)
+        if (level == PermissionLevel.OWNER)
             return false;
-        if (persmissions[index - 1].level == PermissionLevel.OWNER)
+        
+        if(canShare(sender)){
+            uint256 index = indexOf[sender];
+            if (persmissions[index - 1].level == PermissionLevel.SHARE){
+                return level == PermissionLevel.READ;
+            }
             return true;
-        if (level == PermissionLevel.READ)
-            return persmissions[index - 1].level == PermissionLevel.SHARE;
+        }
         return false;        
     }
 

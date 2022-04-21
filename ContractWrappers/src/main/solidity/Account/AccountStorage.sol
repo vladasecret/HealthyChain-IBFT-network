@@ -59,10 +59,14 @@ contract AccountStorage is IAccountStorage{
     }
 
     function getUserContractAddress(address user) external view returns(address){
+        uint index = indexOf[user];
+        require(index > 0, "Account not registered");
         return allowlist[indexOf[user] - 1].userContractAddress;
     }
 
     function getAccountInfo(address account) public view returns(address, UserClass, address){
+        uint index = indexOf[account];
+        require(index > 0, "Account not registered");
         AccountInfo storage info = allowlist[indexOf[account] - 1];
         return (info.accountAddress, info.class, info.userContractAddress);
     }

@@ -4,15 +4,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import healthyLife.serverApi.models.permission.RecordMetadata;
 import healthyLife.serverApi.wrappers.user.DoctorContractApi;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.DynamicBytes;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteCall;
+import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.exceptions.ContractCallException;
@@ -44,26 +47,25 @@ public class DoctorContract extends UserContract implements DoctorContractApi {
      * зашифрованные для пациента, врача и поставщика соответственно.
      * 
      * @param patientAddress адрес пациента, в медицинскую карту которого отправитель добавит запись
-     * @param patientData smk, encodedHash для пациента
-     * @param doctorData smk, encodedHash для врача
+     * @param patientMetadata smk, encodedHash для пациента
+     * @param doctorMetadata smk, encodedHash для врача
      * @param providerAddress адрес поставщика
-     * @param providerData smk, encodedHash для поставщика
-     * @see DoctorContract#executeAddRecord(String) 
+     * @param providerMetadata smk, encodedHash для поставщика
+     * @see DoctorContractApi#executeAddRecord(String)
+     * @see healthyLife.serverApi.models.permission.RecordMetadata
      */
-    public RawTransaction addRecordRawTransaction(String patientAddress, List<byte[]> patientData, List<byte[]> doctorData, String providerAddress, List<byte[]> providerData) {
+    public RawTransaction addRecordRawTransaction(String patientAddress,
+                                                            RecordMetadata patientMetadata,
+                                                            RecordMetadata doctorMetadata,
+                                                            String providerAddress,
+                                                            RecordMetadata providerMetadata) {
         final Function function = new Function(
                 FUNC_ADDRECORD,
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, patientAddress),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                org.web3j.abi.Utils.typeMap(patientData, org.web3j.abi.datatypes.DynamicBytes.class)),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                org.web3j.abi.Utils.typeMap(doctorData, org.web3j.abi.datatypes.DynamicBytes.class)),
+                        patientMetadata,
+                        doctorMetadata,
                         new org.web3j.abi.datatypes.Address(160, providerAddress),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                org.web3j.abi.Utils.typeMap(providerData, org.web3j.abi.datatypes.DynamicBytes.class))),
+                        providerMetadata),
                 Collections.<TypeReference<?>>emptyList());
         return createRawTransaction(function);
     }
@@ -78,25 +80,18 @@ public class DoctorContract extends UserContract implements DoctorContractApi {
      * @param hexTransaction подписанная владельцем контракта RawTransaction
      * @return RemoteCall, вызов которого исполнит транзакцию и вернет информацию о выполнении TransactionReceipt
      * @throws TransactionException вернется в случае несоответствия с RawTransaction, предоставляемой методом addPermissionRawTransaction
-     * @see DoctorContract#addRecordRawTransaction(String, List, List, String, List) 
+     * @see DoctorContract#addRecordRawTransaction(String, RecordMetadata, RecordMetadata, String, RecordMetadata) 
      */
     public RemoteCall<TransactionReceipt> executeAddRecord(String hexTransaction) throws TransactionException {
         final Function function = new Function(
                 FUNC_ADDRECORD,
                 Arrays.<Type>asList(Address.DEFAULT,
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                DynamicBytes.DEFAULT),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                DynamicBytes.DEFAULT),
+                        new RecordMetadata(Bytes32.DEFAULT, Bytes32.DEFAULT),
+                        new RecordMetadata(Bytes32.DEFAULT, Bytes32.DEFAULT),
                         Address.DEFAULT,
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.DynamicBytes>(
-                                org.web3j.abi.datatypes.DynamicBytes.class,
-                                DynamicBytes.DEFAULT)),
+                        new RecordMetadata(Bytes32.DEFAULT, Bytes32.DEFAULT)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallSignedTransaction(hexTransaction, function);
     }
-    
  
 }

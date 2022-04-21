@@ -1,4 +1,4 @@
-package healthyLife.contractWrappers.util;
+package healthyLife.serverApi.util;
 
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;

@@ -51,4 +51,12 @@ public interface RegistryContractApi extends RawContractApi {
      * @return RemoteFunctionCall, вызов которого вернет Boolean
      */
     public RemoteFunctionCall<Boolean> isAuthorized(String account);
+
+
+
+    /**
+     * Метод(eth_call) возвращает RemoteFunctionCall, вызов которого вернет результат проверки, зарегистрирован ли контракт по указанному имени Boolean
+     * @param name имя контракта в виду byte[32]
+     */
+    public RemoteFunctionCall<Boolean> hasContractAddress(byte[] name);
 }

@@ -25,7 +25,7 @@ contract AccountController is IAccountProxy, IAccountController{
     }
 
     modifier notSelf(address account) {
-        require(account != msg.sender);
+        require(account != msg.sender, "Not self");
         _;
     }
 
@@ -137,7 +137,7 @@ contract AccountController is IAccountProxy, IAccountController{
     }
 
     function registry(address account, UserClass userClass) internal{
-        address userContractAddress = userContractFactory.create(account, UserClass.PATIENT);
+        address userContractAddress = userContractFactory.create(account, userClass);
         require(UserContract(userContractAddress).getOwner() == account, "UserContract created with wrong ownership");
         accountStorage.add(account, userClass, userContractAddress);
     }
