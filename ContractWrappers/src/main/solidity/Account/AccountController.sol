@@ -78,7 +78,7 @@ contract AccountController is IAccountProxy, IAccountController{
         if (gasPrice != 0 || value != 0)
             return false;
         if (isUser(sender)){
-            if (!(isRegistered(sender) || registryContract.isAdmin(sender)))
+            if (!(sender == creator || isRegistered(sender) || registryContract.isAdmin(sender)))
                 return false;
             if ((target == address(0) && sender != creator) || isUser(target))
                 return false;
@@ -104,9 +104,11 @@ contract AccountController is IAccountProxy, IAccountController{
     function registryProvider(address account) onlyAdmin external {
         require(isUser(account), "Registered user address cannot have a code");
         require(!isRegistered(account), "This user is already registered");
-        require(registryContract.isAdmin(account), "To register an address as a provider, it must be an administrator");  
-        address userContractAddress = userContractFactory.create(account, UserClass.PROVIDER);
-        accountStorage.add(account, UserClass.PROVIDER, userContractAddress);
+        require(registryContract.isAdmin(account), "To register an address as a provider, it must be an administrator");
+
+        registry(account, UserClass.PROVIDER);
+//        address userContractAddress = userContractFactory.create(account, UserClass.PROVIDER);
+//        accountStorage.add(account, UserClass.PROVIDER, userContractAddress);
     }
 
     /// @notice Adds a new user with the doctor class to AccountStorage. Function can only be called by administrator
@@ -116,8 +118,9 @@ contract AccountController is IAccountProxy, IAccountController{
         require(isUser(account), "Registered user address cannot have a code");
         require(!isRegistered(account), "This user is already registered");
 
-        address userContractAddress = userContractFactory.create(account, UserClass.DOCTOR);
-        accountStorage.add(account, UserClass.DOCTOR, userContractAddress);
+        registry(account, UserClass.DOCTOR);
+//        address userContractAddress = userContractFactory.create(account, UserClass.DOCTOR);
+//        accountStorage.add(account, UserClass.DOCTOR, userContractAddress);
 
     }
 
@@ -127,9 +130,16 @@ contract AccountController is IAccountProxy, IAccountController{
     function registryPatient(address account) external {
         require(isUser(account), "Registered user address cannot have a code");
         require(!isRegistered(account), "This user is already registered");
+        registry(account , UserClass.PATIENT);
+//
+//        address userContractAddress = userContractFactory.create(account, UserClass.PATIENT);
+//        accountStorage.add(account, UserClass.PATIENT, userContractAddress);
+    }
 
+    function registry(address account, UserClass userClass) internal{
         address userContractAddress = userContractFactory.create(account, UserClass.PATIENT);
-        accountStorage.add(account, UserClass.PATIENT, userContractAddress);
+        require(UserContract(userContractAddress).getOwner() == account, "UserContract created with wrong ownership");
+        accountStorage.add(account, userClass, userContractAddress);
     }
 
 

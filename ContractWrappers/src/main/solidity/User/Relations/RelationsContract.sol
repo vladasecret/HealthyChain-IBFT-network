@@ -124,6 +124,7 @@ contract RelationsContract{
         
     }
 
+    //external call from another RelationContract
     function rejectRelation() external registeredOnly senderIsRelationContract{
         address user = tx.origin;
         RelationStatus status = getStatus(user);
@@ -135,7 +136,7 @@ contract RelationsContract{
     }
 
     //external call from another RelationContract
-    function confirmRelation(bool confirm) external userContractOnly() wasInitBySender(){
+    function confirmRelation(bool confirm) external wasInitBySender senderIsRelationContract{
         address user = tx.origin;
         uint256 index = indexOf[user];
 

@@ -59,7 +59,7 @@ contract AccountStorage is IAccountStorage{
     }
 
     function getUserContractAddress(address user) external view returns(address){
-        return allowlist[indexOf[user]].userContractAddress;
+        return allowlist[indexOf[user] - 1].userContractAddress;
     }
 
     function getAccountInfo(address account) public view returns(address, UserClass, address){
