@@ -1,5 +1,6 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
     id "org.web3j" version "4.9.0"
 }
 
@@ -14,7 +15,7 @@ solidity{
     version = '0.8.12'
 }
 
-group 'org.example'
+group 'ru.healthyLife'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -28,6 +29,22 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testCompile "org.web3j:web3j-unit:4.5.11"
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+publishing {
+    publications {
+    }
+    repositories {
+        maven {
+            //name = "MyRepo" //  optional target repository name
+            url = "https://github.com/vladasecret/HealthyLifeMaven"
+
+            credentials {
+                username = 'vladasecret'
+                password = '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'
+            }
+        }
+    }
 }
 
 
