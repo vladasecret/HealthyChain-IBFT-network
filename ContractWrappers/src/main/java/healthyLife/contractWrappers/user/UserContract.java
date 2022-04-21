@@ -28,7 +28,6 @@ import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.exceptions.ContractCallException;
 
 public class UserContract extends RawContract implements UserContractApi {
-    public static final String BINARY = "";
 
     public static final String FUNC_GETOWNER = "getOwner";
 
@@ -79,13 +78,8 @@ public class UserContract extends RawContract implements UserContractApi {
     public static final String FUNC_REMOVEPERMISSIONINTERNAL = "removePermissionInternal";
 
     protected UserContract(String contractAddress, String senderAddress, Web3j web3j) {
-        super(BINARY, contractAddress, senderAddress, web3j);
+        super(contractAddress, senderAddress, web3j);
     }
-
-    protected UserContract(String binary, String contractAddress, String senderAddress, Web3j web3j) {
-        super(binary, contractAddress, senderAddress, web3j);
-    }
-
 
     public static UserContract load(String contractAddress, String senderAddress, Web3j web3j) {
         if (!hasCode(contractAddress, web3j)) {
